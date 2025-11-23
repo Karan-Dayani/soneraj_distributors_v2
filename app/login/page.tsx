@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/app/utils/supabase/client";
+import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,48 +53,81 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleLogin}
-        className="w-full max-w-md p-8 bg-white rounded shadow"
-      >
-        <h2 className="mb-6 text-2xl font-bold text-center">
-          Restricted Access
-        </h2>
-
-        {error && (
-          <p className="mb-4 text-sm text-red-500 text-center">{error}</p>
-        )}
-
-        <div className="mb-4">
-          <label className="block mb-2 text-sm font-bold">Username</label>
-          <input
-            type="text"
-            required
-            className="w-full p-2 border rounded"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+    <div className="min-h-screen w-full flex items-center justify-center bg-bright-snow font-sans px-4">
+      <div className="w-full max-w-[400px] bg-white rounded-xl shadow-lg border border-platinum p-8">
+        {/* Logo Section */}
+        <div className="flex justify-center mb-8">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={1000}
+            height={1000}
+            className="w-48 h-auto object-contain"
           />
         </div>
 
-        <div className="mb-6">
-          <label className="block mb-2 text-sm font-bold">Password</label>
-          <input
-            type="password"
-            required
-            className="w-full p-2 border rounded"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <form className="space-y-6">
+          <h2 className="text-xl font-semibold text-center text-gunmetal mb-8">
+            Admin Login
+          </h2>
 
-        <button
-          disabled={loading}
-          className="w-full p-2 text-white bg-black rounded disabled:bg-gray-500"
-        >
-          {loading ? "Checking..." : "Login"}
-        </button>
-      </form>
+          {error && (
+            <p className="mb-4 text-sm text-red-500 text-center">{error}</p>
+          )}
+
+          {/* Username Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-iron-grey">
+              Username
+            </label>
+            <input
+              type="text"
+              className="w-full px-0 py-2 bg-transparent border-b-2 border-pale-slate text-shadow-grey placeholder-pale-slate-2 focus:outline-none focus:border-gunmetal transition-colors"
+              placeholder="Enter username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+
+          {/* Password Input */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-iron-grey">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="w-full px-0 py-2 bg-transparent border-b-2 border-pale-slate text-shadow-grey placeholder-pale-slate-2 focus:outline-none focus:border-gunmetal transition-colors pr-10"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-0 top-2 text-slate-grey hover:text-gunmetal"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 mt-4 bg-gunmetal hover:bg-shadow-grey text-white rounded-lg text-sm font-medium transition-colors duration-200"
+            disabled={loading}
+            onClick={(e) => handleLogin(e)}
+          >
+            Login
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <a href="#" className="text-xs text-slate-grey hover:underline">
+            Software made by Karan Dayani
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
