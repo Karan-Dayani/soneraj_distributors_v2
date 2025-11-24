@@ -1,5 +1,4 @@
 import { createClient } from "@/app/utils/supabase/server";
-import LogoutButton from "@/app/components/LogoutButton";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -23,11 +22,10 @@ export default async function Home() {
     .single();
 
   return (
-    <div className="min-h-screen p-10 bg-bright-snow">
+    <div className="p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <LogoutButton />
         </div>
 
         <div className="p-6 bg-white rounded shadow">

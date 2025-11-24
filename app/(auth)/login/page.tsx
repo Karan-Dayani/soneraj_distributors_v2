@@ -27,12 +27,15 @@ export default function LoginPage() {
         "get_email_from_username",
         { p_username: username }
       );
+      // const { data: emailData, error: rpcError } = await supabase.rpc(
+      //   "lookup_user_email",
+      //   { username_input: username } // Note: parameter name changed to match SQL above
+      // );
 
       if (rpcError) throw rpcError;
-      if (!emailData || emailData.length === 0)
-        throw new Error("User not found");
+      if (!emailData || !emailData.email) throw new Error("User not found");
 
-      const userEmail = emailData[0].email;
+      const userEmail = emailData.email;
 
       // 2. Login
       const { error: authError } = await supabase.auth.signInWithPassword({
@@ -53,16 +56,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-bright-snow font-sans px-4">
+    <div className="h-full w-full flex items-center justify-center font-sans px-4">
       <div className="w-full max-w-[400px] bg-white rounded-xl shadow-lg border border-platinum p-8">
         {/* Logo Section */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/logo.png"
+            src="/logo-black.png"
             alt="Logo"
             width={1000}
             height={1000}
-            className="w-48 h-auto object-contain"
+            className="w-60 h-auto object-contain"
           />
         </div>
 
@@ -114,7 +117,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full py-3 mt-4 bg-gunmetal hover:bg-shadow-grey text-white rounded-lg text-sm font-medium transition-colors duration-200"
+            className="w-full py-3 mt-4 bg-gunmetal hover:bg-shadow-grey text-white rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer"
             disabled={loading}
             onClick={(e) => handleLogin(e)}
           >
@@ -123,7 +126,11 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <a href="#" className="text-xs text-slate-grey hover:underline">
+          <a
+            href="https://karan-dayani.vercel.app/"
+            target="_blank"
+            className="text-xs text-slate-grey hover:underline"
+          >
             Software made by Karan Dayani
           </a>
         </div>

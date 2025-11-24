@@ -42,8 +42,16 @@ export interface Database {
         };
         Returns: {
           email: string;
-        }[];
+        };
       };
+      // lookup_user_email: {
+      //   Args: {
+      //     username_input: string; // Must match the SQL parameter name
+      //   };
+      //   Returns: {
+      //     email: string;
+      //   }[];
+      // };
     };
     Enums: {
       [_ in never]: never;
