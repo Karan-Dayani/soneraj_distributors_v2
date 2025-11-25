@@ -6,9 +6,166 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5";
+  };
   public: {
     Tables: {
+      Bottle_Sizes: {
+        Row: {
+          created_at: string;
+          id: number;
+          name: string | null;
+          size_ml: string | null;
+          weight_kg: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+          size_ml?: string | null;
+          weight_kg?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+          size_ml?: string | null;
+          weight_kg?: number | null;
+        };
+        Relationships: [];
+      };
+      Customers: {
+        Row: {
+          created_at: string;
+          id: number;
+          name: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+        };
+        Relationships: [];
+      };
+      Order_Item_Batches: {
+        Row: {
+          created_at: string;
+          id: number;
+          quantity: number | null;
+          sales_order_item_id: number | null;
+          stock_batch_id: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          quantity?: number | null;
+          sales_order_item_id?: number | null;
+          stock_batch_id?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          quantity?: number | null;
+          sales_order_item_id?: number | null;
+          stock_batch_id?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "Order_Item_Batches_sales_order_item_id_fkey";
+            columns: ["sales_order_item_id"];
+            isOneToOne: false;
+            referencedRelation: "Sales_Order_Items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "Order_Item_Batches_stock_batch_id_fkey";
+            columns: ["stock_batch_id"];
+            isOneToOne: false;
+            referencedRelation: "Stock_Batches";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      Product_Stock: {
+        Row: {
+          created_at: string;
+          id: number;
+          product_id: number | null;
+          quantity: number | null;
+          size_id: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          product_id?: number | null;
+          quantity?: number | null;
+          size_id?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          product_id?: number | null;
+          quantity?: number | null;
+          size_id?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "Product_Stock_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "Products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "Product_Stock_size_id_fkey";
+            columns: ["size_id"];
+            isOneToOne: false;
+            referencedRelation: "Bottle_Sizes";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      Products: {
+        Row: {
+          created_at: string;
+          id: number;
+          name: string | null;
+          short_name: string | null;
+          supplier_id: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+          short_name?: string | null;
+          supplier_id?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+          short_name?: string | null;
+          supplier_id?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "Products_supplier_id_fkey";
+            columns: ["supplier_id"];
+            isOneToOne: false;
+            referencedRelation: "Suppliers";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       profiles: {
         Row: {
           id: string;
@@ -22,39 +179,282 @@ export interface Database {
           id?: string;
           username?: string;
         };
+        Relationships: [];
+      };
+      Sales_Order_Items: {
+        Row: {
+          created_at: string;
+          id: number;
+          price: number | null;
+          product_stock_id: number | null;
+          "quantity-ordered": number | null;
+          sales_order_id: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          price?: number | null;
+          product_stock_id?: number | null;
+          "quantity-ordered"?: number | null;
+          sales_order_id?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          price?: number | null;
+          product_stock_id?: number | null;
+          "quantity-ordered"?: number | null;
+          sales_order_id?: number | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "profiles_id_fkey";
-            columns: ["id"];
-            referencedRelation: "users";
+            foreignKeyName: "Sales_Order_Items_product_stock_id_fkey";
+            columns: ["product_stock_id"];
+            isOneToOne: false;
+            referencedRelation: "Product_Stock";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "Sales_Order_Items_sales_order_id_fkey";
+            columns: ["sales_order_id"];
+            isOneToOne: false;
+            referencedRelation: "Sales_Orders";
             referencedColumns: ["id"];
           }
         ];
+      };
+      Sales_Orders: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          customer_id: number | null;
+          id: number;
+          status: Database["public"]["Enums"]["order_status"] | null;
+          user_id: string | null;
+        };
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          customer_id?: number | null;
+          id?: number;
+          status?: Database["public"]["Enums"]["order_status"] | null;
+          user_id?: string | null;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          customer_id?: number | null;
+          id?: number;
+          status?: Database["public"]["Enums"]["order_status"] | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "Sales_Orders_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "Customers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "Sales_Orders_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      Stock_Batches: {
+        Row: {
+          batch_code: string | null;
+          created_at: string;
+          id: number;
+          product_stock_id: number | null;
+          quantity: number | null;
+        };
+        Insert: {
+          batch_code?: string | null;
+          created_at?: string;
+          id?: number;
+          product_stock_id?: number | null;
+          quantity?: number | null;
+        };
+        Update: {
+          batch_code?: string | null;
+          created_at?: string;
+          id?: number;
+          product_stock_id?: number | null;
+          quantity?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "Stock_Batches_product_stock_id_fkey";
+            columns: ["product_stock_id"];
+            isOneToOne: false;
+            referencedRelation: "Product_Stock";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      Suppliers: {
+        Row: {
+          created_at: string;
+          id: number;
+          name: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: number;
+          name?: string | null;
+        };
+        Relationships: [];
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      get_email_from_username: {
-        Args: {
-          p_username: string;
-        };
-        Returns: {
-          email: string;
-        };
-      };
-      // lookup_user_email: {
-      //   Args: {
-      //     username_input: string; // Must match the SQL parameter name
-      //   };
-      //   Returns: {
-      //     email: string;
-      //   }[];
-      // };
+      get_email_from_username: { Args: { p_username: string }; Returns: Json };
     };
     Enums: {
+      order_status: "pending" | "completed";
+    };
+    CompositeTypes: {
       [_ in never]: never;
     };
   };
+};
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  "public"
+>];
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
 }
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+      DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] &
+      DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : never;
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : never;
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : never;
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never;
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never;
+
+export const Constants = {
+  public: {
+    Enums: {
+      order_status: ["pending", "completed"],
+    },
+  },
+} as const;

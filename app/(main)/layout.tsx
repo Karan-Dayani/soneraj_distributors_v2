@@ -3,6 +3,7 @@ import { createClient } from "@/app/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { UserProvider } from "@/app/context/UserContext"; // <--- Import this
 import Header from "../components/Header";
+import QueryProvider from "../components/QueryProvider";
 
 export default async function MainLayout({
   children,
@@ -33,13 +34,15 @@ export default async function MainLayout({
 
   return (
     <UserProvider value={userData}>
-      <div className="h-16">
-        <Header />
-      </div>
+      <QueryProvider>
+        <div className="h-16">
+          <Header />
+        </div>
 
-      <main className="flex-1 bg-bright-snow overflow-auto h-[calc(100vh-4rem)]">
-        {children}
-      </main>
+        <main className="flex-1 bg-bright-snow overflow-auto h-[calc(100vh-4rem)] no-scrollbar">
+          {children}
+        </main>
+      </QueryProvider>
     </UserProvider>
   );
 }

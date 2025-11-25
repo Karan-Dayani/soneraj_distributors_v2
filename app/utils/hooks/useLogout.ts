@@ -1,13 +1,14 @@
 // app/hooks/useLogout.ts
 "use client";
 
-import { createClient } from "@/app/utils/supabase/client";
+// import { createClient } from "@/app/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { supabase } from "../supabase/client";
 
 export function useLogout() {
   const router = useRouter();
-  const supabase = createClient();
+  // const supabase = createClient();
   const [loading, setLoading] = useState(false);
 
   const logout = async () => {

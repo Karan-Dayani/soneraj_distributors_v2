@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useLogout } from "../utils/hooks/useLogout";
+import Link from "next/link";
 
 const menuItems = [
   { name: "Home", icon: <Home size={20} />, route: "/" },
@@ -82,8 +83,9 @@ export default function Header() {
             <ul className="space-y-1">
               {menuItems.map((item, index) => (
                 <li key={index}>
-                  <a
+                  <Link
                     href={item.route}
+                    onClick={() => setIsSidebarOpen(false)}
                     className="
                   group flex items-center gap-3 px-4 py-3 rounded-lg
                   text-pale-slate transition-all duration-200
@@ -98,7 +100,7 @@ export default function Header() {
                     <span className="font-medium tracking-wide">
                       {item.name}
                     </span>
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

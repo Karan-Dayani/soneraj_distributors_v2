@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/app/utils/supabase/client";
+// import { createClient } from "@/app/utils/supabase/client";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/app/utils/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
+  // const supabase = createClient();
 
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -23,14 +24,12 @@ export default function LoginPage() {
 
     try {
       // 1. Lookup Email
-      const { data: emailData, error: rpcError } = await supabase.rpc(
+      const { data, error: rpcError } = await supabase.rpc(
         "get_email_from_username",
         { p_username: username }
       );
-      // const { data: emailData, error: rpcError } = await supabase.rpc(
-      //   "lookup_user_email",
-      //   { username_input: username } // Note: parameter name changed to match SQL above
-      // );
+
+      const emailData = data as { email: string } | null;
 
       if (rpcError) throw rpcError;
       if (!emailData || !emailData.email) throw new Error("User not found");
