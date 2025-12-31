@@ -47,7 +47,7 @@ export default function LoginPage() {
       router.refresh();
       router.push("/");
     } catch (err) {
-      console.error(err); // Good for debugging
+      console.log(err); // Good for debugging
       setError("Invalid username or password");
     } finally {
       setLoading(false);

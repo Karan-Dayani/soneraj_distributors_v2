@@ -18,7 +18,7 @@ import Link from "next/link";
 
 const menuItems = [
   { name: "Home", icon: <Home size={20} />, route: "/" },
-  { name: "Cart", icon: <ShoppingCart size={20} />, route: "/" },
+  { name: "Cart", icon: <ShoppingCart size={20} />, route: "/cart" },
   { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
   { name: "Orders", icon: <Package size={20} />, route: "/" },
   { name: "Stock", icon: <Layers size={20} />, route: "/" },
@@ -38,7 +38,8 @@ export default function Header() {
           alt="logo"
           width={1000}
           height={1000}
-          className="w-32 h-auto object-contain"
+          loading="eager"
+          className="w-24 h-auto object-contain"
         />
 
         <div
@@ -57,7 +58,7 @@ export default function Header() {
       <div
         onClick={() => setIsSidebarOpen(false)}
         className={`
-          fixed inset-0 top-16 z-40 bg-black/50 backdrop-blur-sm transition-all duration-300
+          fixed inset-0 top-12 z-40 bg-black/50 backdrop-blur-sm transition-all duration-300
           ${isSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"}
         `}
       />
@@ -65,7 +66,7 @@ export default function Header() {
       {/* --- Sidebar Panel --- */}
       <div
         className={`
-        fixed top-16 right-0 z-50 h-[calc(100vh-4rem)] 
+        fixed top-12 right-0 z-50 h-[calc(100vh-3rem)] 
         bg-shadow-grey border-l border-gunmetal shadow-2xl
         transition-all duration-300 ease-in-out overflow-hidden flex flex-col
         ${isSidebarOpen ? "w-64" : "w-0"}

@@ -18,6 +18,9 @@ export function useProductVariants(productId: number) {
             id,
             size_ml,      
             weight_kg
+          ),
+          Products (   
+            name      
           )
         `
         )

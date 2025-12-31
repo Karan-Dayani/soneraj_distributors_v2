@@ -1,7 +1,8 @@
 // app/(main)/layout.tsx
 import { createClient } from "@/app/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { UserProvider } from "@/app/context/UserContext"; // <--- Import this
+import { UserProvider } from "@/app/context/UserContext";
+import { CartProvider } from "../context/CartContext";
 import Header from "../components/Header";
 import QueryProvider from "../components/QueryProvider";
 
@@ -29,20 +30,22 @@ export default async function MainLayout({
   const userData = {
     userId: user.id,
     email: user.email,
-    username: profile?.username || "User", // Fallback if no username set
+    username: profile?.username || "User",
   };
 
   return (
     <UserProvider value={userData}>
-      <QueryProvider>
-        <div className="h-16">
-          <Header />
-        </div>
+      <CartProvider>
+        <QueryProvider>
+          <div className="h-12">
+            <Header />
+          </div>
 
-        <main className="flex-1 bg-bright-snow overflow-auto h-[calc(100vh-4rem)] no-scrollbar">
-          {children}
-        </main>
-      </QueryProvider>
+          <main className="flex-1 bg-bright-snow overflow-auto h-[calc(100vh-3rem)] no-scrollbar">
+            {children}
+          </main>
+        </QueryProvider>
+      </CartProvider>
     </UserProvider>
   );
 }
