@@ -7,6 +7,8 @@ import { BottleWine, Plus, Warehouse } from "lucide-react";
 import { Database } from "@/types/supabase";
 import { useCart, CartItem } from "@/app/context/CartContext";
 import { useState } from "react";
+import Loader from "@/app/components/Loader";
+import Error from "@/app/components/Error";
 
 type ProductVariant = Pick<
   Database["public"]["Tables"]["Product_Stock"]["Row"],
@@ -79,11 +81,10 @@ export default function Product() {
     }
   };
 
-  if (isLoading)
-    return <div className="p-10 text-slate-grey">Loading product...</div>;
-  if (error) return <div className="p-10 text-red-500">{error.message}</div>;
+  if (isLoading) return <Loader />;
+  if (error) return <Error error={error.message} />;
   if (!productVariants || productVariants.length === 0) {
-    return <div className="p-10 text-slate-grey">No product found.</div>;
+    return <Error error="No Product found." />;
   }
 
   return (

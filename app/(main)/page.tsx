@@ -5,6 +5,8 @@ import { ChevronDown, Package, AlertCircle, Tag } from "lucide-react";
 import { Database } from "@/types/supabase";
 import { useProducts } from "../utils/hooks/useProducts";
 import Link from "next/link";
+import Loader from "../components/Loader";
+import Error from "../components/Error";
 
 type Supplier = Database["public"]["Tables"]["Suppliers"]["Row"];
 type Product = Database["public"]["Tables"]["Products"]["Row"];
@@ -31,14 +33,9 @@ export default function Home() {
   const isLoading = isLoadingSuppliers || isLoadingProducts;
   const error = suppliersError || productsError;
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center h-[50vh] text-slate-grey animate-pulse">
-        Loading Inventory...
-      </div>
-    );
+  if (isLoading) return <Loader />;
 
-  if (error) return <div className="p-10 text-red-500">{error.message}</div>;
+  if (error) return <Error error={error.message} />;
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto">

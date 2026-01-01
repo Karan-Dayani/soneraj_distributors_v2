@@ -64,6 +64,7 @@ export default function LoginPage() {
             alt="Logo"
             width={1000}
             height={1000}
+            loading="eager"
             className="w-60 h-auto object-contain"
           />
         </div>
