@@ -1,4 +1,3 @@
-// app/context/CartContext.tsx
 "use client";
 
 import {
@@ -9,30 +8,45 @@ import {
   useCallback,
 } from "react";
 
-// --- Types ---
-export type CartItem = {
-  productStockId: number;
-  productId: number;
-  productName: string;
+// --- 1. NEW TYPES (Nested Structure) ---
+
+export type CartVariant = {
+  stockId: number; // Unique ID for the specific size
   sizeName: string;
   quantity: number;
   maxStock: number;
+  price: number;
 };
 
-type CartState = Record<number, CartItem>;
+// A "CartProduct" groups multiple sizes under one Brand Name
+export type CartProduct = {
+  productId: number;
+  productName: string;
+  // We use a Record here so we can easily update specific sizes without looping
+  variants: Record<number, CartVariant>;
+};
+
+// Key = productId (Not stockId anymore!)
+type CartState = Record<number, CartProduct>;
 
 type CartContextType = {
   cart: CartState;
-  addToCart: (item: CartItem) => void;
-  addManyToCart: (items: CartItem[]) => void; // <--- NEW FUNCTION
-  removeFromCart: (stockId: number) => void;
+  // Instead of adding items one by one, we update the whole product
+  updateProductInCart: (
+    productId: number,
+    name: string,
+    variants: CartVariant[]
+  ) => void;
+  removeProduct: (productId: number) => void;
+  removeVariant: (productId: number, stockId: number) => void;
   clearCart: () => void;
   totalItems: number;
+  getUniqueSizes: () => string[];
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// --- HELPER: The Store Subscriber ---
+// --- STORAGE HELPER (Same as before) ---
 const cartStore = {
   subscribe(callback: () => void) {
     window.addEventListener("storage", callback);
@@ -61,65 +75,123 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const cart: CartState = JSON.parse(cartJson);
 
   const saveCart = useCallback((newCart: CartState) => {
-    const json = JSON.stringify(newCart);
-    localStorage.setItem("liquor_app_cart", json);
+    localStorage.setItem("liquor_app_cart", JSON.stringify(newCart));
     window.dispatchEvent(new Event("local-storage-cart-update"));
   }, []);
 
   // --- ACTIONS ---
 
-  // 1. Add Single Item
-  const addToCart = (item: CartItem) => {
-    const prev = cart;
-    if (item.quantity <= 0) {
-      const newCart = { ...prev };
-      delete newCart[item.productStockId];
-      saveCart(newCart);
+  // 1. UPDATE PRODUCT (Handles Adding & Updating multiple sizes at once)
+  const updateProductInCart = (
+    productId: number,
+    name: string,
+    newVariants: CartVariant[]
+  ) => {
+    const newCart = { ...cart };
+
+    // Get existing product or create new one
+    const productEntry = newCart[productId] || {
+      productId,
+      productName: name,
+      variants: {},
+    };
+
+    // Create a mutable copy of variants
+    const updatedVariants = { ...productEntry.variants };
+
+    // Loop through the new inputs
+    newVariants.forEach((v) => {
+      if (v.quantity > 0) {
+        // Add/Update
+        updatedVariants[v.stockId] = v;
+      } else {
+        // If quantity is 0, remove it
+        delete updatedVariants[v.stockId];
+      }
+    });
+
+    // If no variants left, remove the whole product
+    if (Object.keys(updatedVariants).length === 0) {
+      delete newCart[productId];
     } else {
-      const newCart = { ...prev, [item.productStockId]: item };
+      // Save the updates
+      newCart[productId] = {
+        ...productEntry,
+        variants: updatedVariants,
+      };
+    }
+
+    saveCart(newCart);
+  };
+
+  // 2. REMOVE ENTIRE PRODUCT
+  const removeProduct = (productId: number) => {
+    const newCart = { ...cart };
+    delete newCart[productId];
+    saveCart(newCart);
+  };
+
+  // 3. REMOVE SINGLE VARIANT (e.g., from Checkout Page)
+  const removeVariant = (productId: number, stockId: number) => {
+    const newCart = { ...cart };
+    const product = newCart[productId];
+
+    if (product) {
+      const newVariants = { ...product.variants };
+      delete newVariants[stockId];
+
+      // If that was the last variant, remove the product entirely
+      if (Object.keys(newVariants).length === 0) {
+        delete newCart[productId];
+      } else {
+        newCart[productId] = { ...product, variants: newVariants };
+      }
       saveCart(newCart);
     }
   };
 
-  // 2. Add MANY Items (Batch Update) <--- THIS FIXES YOUR ISSUE
-  const addManyToCart = (items: CartItem[]) => {
-    const newCart = { ...cart }; // Clone current cart
+  const clearCart = () => saveCart({});
 
-    items.forEach((item) => {
-      if (item.quantity <= 0) {
-        delete newCart[item.productStockId];
-      } else {
-        newCart[item.productStockId] = item;
-      }
+  // 4. CALCULATE TOTAL (Double Loop needed now)
+  const totalItems = Object.values(cart).reduce((sum, product) => {
+    const productTotal = Object.values(product.variants).reduce(
+      (pSum, v) => pSum + v.quantity,
+      0
+    );
+    return sum + productTotal;
+  }, 0);
+
+  // 5. GET UNIQUE SIZES
+  const getUniqueSizes = useCallback(() => {
+    const uniqueSizes = new Set<string>();
+
+    Object.values(cart).forEach((product) => {
+      // Safety check for old data to prevent crashes
+      if (!product || !product.variants) return;
+
+      Object.values(product.variants).forEach((variant) => {
+        uniqueSizes.add(variant.sizeName);
+      });
     });
 
-    saveCart(newCart); // Save only ONCE
-  };
-
-  const removeFromCart = (stockId: number) => {
-    const newCart = { ...cart };
-    delete newCart[stockId];
-    saveCart(newCart);
-  };
-
-  const clearCart = () => {
-    saveCart({});
-  };
-
-  const totalItems = Object.values(cart).reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
+    // Convert Set -> Array and Sort (180ml -> 750ml -> 1L)
+    return Array.from(uniqueSizes).sort((a, b) => {
+      const quantityA = parseInt(a.match(/\d+/)?.[0] || "0", 10);
+      const quantityB = parseInt(b.match(/\d+/)?.[0] || "0", 10);
+      return quantityB - quantityA;
+    });
+  }, [cart]);
 
   return (
     <CartContext.Provider
       value={{
         cart,
-        addToCart,
-        addManyToCart,
-        removeFromCart,
+        updateProductInCart,
+        removeProduct,
+        removeVariant,
         clearCart,
         totalItems,
+        getUniqueSizes,
       }}
     >
       {children}
@@ -129,8 +201,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
+  if (!context) throw new Error("useCart must be used within a CartProvider");
   return context;
 }

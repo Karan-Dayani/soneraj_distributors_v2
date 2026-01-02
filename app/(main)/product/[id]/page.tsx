@@ -2,10 +2,10 @@
 "use client";
 
 import { useProductVariants } from "@/app/utils/hooks/useProductVarients";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { BottleWine, Plus, Warehouse } from "lucide-react";
 import { Database } from "@/types/supabase";
-import { useCart, CartItem } from "@/app/context/CartContext";
+import { useCart, CartVariant } from "@/app/context/CartContext";
 import { useState } from "react";
 import Loader from "@/app/components/Loader";
 import Error from "@/app/components/Error";
@@ -32,7 +32,7 @@ export default function Product() {
     isLoading,
     error,
   } = useProductVariants(Number(id));
-  const { cart, addManyToCart } = useCart();
+  const { cart, updateProductInCart } = useCart();
 
   // 2. Local State
   const [localQuantities, setLocalQuantities] = useState<
@@ -41,43 +41,45 @@ export default function Product() {
 
   // 3. Helper to determine what to show in the box
   const getInputValue = (variantId: number) => {
-    // Priority 1: User has typed something locally (even if it is empty "")
+    // 1. Local typing
     if (localQuantities[variantId] !== undefined) {
       return localQuantities[variantId];
     }
-    // Priority 2: Item is already in Global Cart
-    if (cart[variantId]) {
-      return String(cart[variantId].quantity);
+    // 2. Global Cart (Nested Lookup)
+    // Check if Product exists -> Check if Variant exists
+    const productInCart = cart[Number(id)];
+    if (productInCart && productInCart.variants[variantId]) {
+      return String(productInCart.variants[variantId].quantity);
     }
-    // Priority 3: Default to empty
     return "";
   };
 
   const handleSaveToCart = () => {
-    // 1. Create a bucket (Array)
-    const itemsToBatch: CartItem[] = [];
+    const variantsToUpdate: CartVariant[] = [];
+    let productName = "Unknown Product";
 
-    // 2. Loop through inputs and fill the bucket
     productVariants?.forEach((variant: ProductVariant) => {
+      // Capture name from first available variant
+      if (variant.Products?.name) productName = variant.Products.name;
+
       const val = getInputValue(variant.id);
       const qty = Number(val);
 
-      if (qty > 0) {
-        itemsToBatch.push({
-          productStockId: variant.id,
-          productId: Number(id),
-          productName: variant.Products?.name || "Unknown",
-          sizeName: variant.Bottle_Sizes?.size_ml + "ml",
+      // We send ALL values (even 0s) so the context knows to remove them if user cleared the box
+      if (qty >= 0) {
+        variantsToUpdate.push({
+          stockId: variant.id,
+          sizeName: variant.Bottle_Sizes?.size_ml as string,
           quantity: qty,
           maxStock: variant.quantity || 0,
+          price: 0,
         });
       }
     });
 
-    // 3. Send the whole bucket ONCE
-    if (itemsToBatch.length > 0) {
-      addManyToCart(itemsToBatch); // <--- This is the new function
-      alert("Added to cart!");
+    if (variantsToUpdate.length > 0) {
+      updateProductInCart(Number(id), productName, variantsToUpdate);
+      redirect("/");
     }
   };
 
