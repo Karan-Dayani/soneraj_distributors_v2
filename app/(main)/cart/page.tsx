@@ -8,19 +8,48 @@ import {
   TableHeader,
 } from "@/app/components/Table";
 import { useCart } from "@/app/context/CartContext";
+import { useCustomers } from "@/app/utils/hooks/useCustomers";
+import { useDebounce } from "@/app/utils/hooks/useDebounce";
 import { Check, ChevronDown, RefreshCcw, Store, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 export default function CheckoutPage() {
-  const {
-    cart,
-    removeProduct,
-    removeVariant,
-    clearCart,
-    totalItems,
-    getUniqueSizes,
-  } = useCart();
+  const { cart, removeProduct, clearCart, totalItems, getUniqueSizes } =
+    useCart();
   const products = Object.values(cart);
   const sizes = getUniqueSizes();
+
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [query, setQuery] = useState<string>("");
+  const debouncedQuery = useDebounce(query, 500);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [selectedRetailer, setSelectedRetailer] = useState<number | null>(null);
+
+  const { data: Customers } = useCustomers({ search: debouncedQuery });
+
+  const handleSelect = (customer: {
+    id: number;
+    name: string | null;
+    created_at: string;
+  }) => {
+    setSelectedRetailer(customer.id);
+    setQuery(customer.name as string);
+    setIsOpen(false);
+    console.log("Selected ID:", customer.id);
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [wrapperRef, selectedRetailer, query]);
 
   if (products.length === 0) return <Error error="Cart is Empty." />;
 
@@ -102,45 +131,84 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      {/* <div className="fixed bottom-0 left-0 w-full bg-white border-t border-labaster-grey p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
-        <div className="max-w-6xl mx-auto">
-          <button className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-gunmetal text-white hover:bg-shadow-grey hover:shadow-xl active:scale-[0.98] transition-all duration-200 cursor-pointer group border border-shadow-grey">
-            <Check
-              size={22}
-              className="group-hover:scale-110 transition-transform duration-200"
-            />
-            <span className="font-bold text-lg tracking-wide uppercase">
-              Confirm Order
-            </span>
-          </button>
-        </div>
-      </div> */}
       <div className="mt-10 p-4 bg-bright-snow border border-alabaster-grey rounded-xl shadow-sm">
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          {/* 1. SELECT RETAILER (Grows to fill space) */}
-          {/* <div className="relative w-full sm:flex-1 group">
+          {/* 1. SELECT RETAILER */}
+          <div className="relative flex-1 w-full group" ref={wrapperRef}>
+            {/* Left Icon */}
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-pale-slate-2 group-focus-within:text-gunmetal transition-colors duration-300 pointer-events-none z-10">
               <Store size={20} strokeWidth={2} />
             </div>
 
-            <select
-              className="w-full appearance-none bg-white border border-alabaster-grey text-gunmetal font-medium py-3.5 pl-12 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gunmetal/10 focus:border-gunmetal transition-all duration-200 cursor-pointer"
-              defaultValue=""
-            >
-              <option value="" disabled className="text-pale-slate">
-                Select a retailer...
-              </option>
-              {retailers.map((retailer) => (
-                <option key={retailer.id} value={retailer.id}>
-                  {retailer.name} — {retailer.code}
-                </option>
-              ))}
-            </select>
+            {/* Search Input (Replaces Select) */}
+            <input
+              type="text"
+              className="w-full bg-white border border-alabaster-grey text-gunmetal font-medium py-3.5 pl-12 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gunmetal/10 focus:border-gunmetal transition-all duration-200 placeholder-pale-slate"
+              placeholder="Search or select a retailer..."
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setIsOpen(true);
+                if (
+                  selectedRetailer &&
+                  Number(e.target.value) !== selectedRetailer
+                ) {
+                  setSelectedRetailer(null); // Clear selection if user modifies text
+                }
+              }}
+              onFocus={() => setIsOpen(true)}
+            />
 
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-pale-slate-2 pointer-events-none">
+            {/* Right Chevron */}
+            <div
+              className={`absolute right-4 top-1/2 -translate-y-1/2 text-pale-slate-2 pointer-events-none transition-transform duration-200 ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            >
               <ChevronDown size={16} strokeWidth={3} />
             </div>
-          </div> */}
+
+            {/* Dropdown Options List */}
+            {isOpen && (
+              <div className="absolute mt-2 w-full bg-white border border-alabaster-grey rounded-lg shadow-xl z-50 max-h-40 overflow-y-auto overflow-x-hidden animate-in fade-in zoom-in-95 duration-100">
+                {Customers?.data.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-pale-slate-2">
+                    No retailers found.
+                  </div>
+                ) : (
+                  <ul className="py-1">
+                    {Customers?.data.map((customer) => {
+                      const isSelected = selectedRetailer === customer.id;
+                      return (
+                        <li
+                          key={customer.id}
+                          onClick={() => handleSelect(customer)}
+                          className={`px-4 py-3 text-sm cursor-pointer flex items-center justify-between group transition-colors
+                          ${
+                            isSelected
+                              ? "bg-bright-snow"
+                              : "hover:bg-bright-snow"
+                          }
+                        `}
+                        >
+                          <span
+                            className={`font-medium ${
+                              isSelected ? "text-gunmetal" : "text-iron-grey"
+                            }`}
+                          >
+                            {customer.name}
+                          </span>
+                          {isSelected && (
+                            <Check size={16} className="text-gunmetal" />
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* 2. ACTION BUTTON (Fixed width or auto) */}
           <button
