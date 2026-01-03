@@ -11,37 +11,36 @@ export type MatrixRow = {
 // 1. THE HEADER
 // ---------------------------------------------------------
 export const TableHeader = ({ sizes }: { sizes: string[] }) => (
-  <thead className="bg-iron-grey text-white">
+  <thead className="bg-iron-grey text-white sticky top-0">
     <tr>
-      {/* PRODUCT NAME (Standard Cell - No Sticky) */}
       <th
         scope="col"
-        className="px-4 py-3 text-left text-xs font-bold tracking-wider uppercase border-b border-gunmetal border-r"
-        style={{ minWidth: "150px" }} // Keeps it wide enough
+        className="bg-iron-grey px-4 py-3 text-left text-xs font-bold tracking-wider uppercase border-b border-gunmetal border-r"
+        style={{ minWidth: "150px" }}
       >
         Product name
       </th>
 
-      {/* SIZES */}
       {sizes.map((size, i) => (
         <th
           key={i}
           scope="col"
-          className="px-2 py-3 text-center text-xs font-bold tracking-wider uppercase border-b border-gunmetal border-r"
-          style={{ minWidth: "80px" }} // Prevents squashing
+          className="bg-iron-grey px-2 py-3 text-center text-xs font-bold tracking-wider uppercase border-b border-gunmetal border-r"
+          style={{ minWidth: "80px" }}
         >
           {size}
         </th>
       ))}
 
-      {/* ACTION */}
-      <th scope="col" className="px-2 py-3 w-16 border-b border-gunmetal">
+      <th
+        scope="col"
+        className="bg-iron-grey px-2 py-3 w-16 border-b border-l border-gunmetal"
+      >
         {/* Empty Header */}
       </th>
     </tr>
   </thead>
 );
-
 // ---------------------------------------------------------
 // 2. THE BODY
 // ---------------------------------------------------------
@@ -98,23 +97,22 @@ export const TableFooter = ({
   total: number;
   colSpanCount: number;
 }) => (
-  <tfoot className="bg-platinum font-bold border-t-2 border-pale-slate">
+  <tfoot className="bg-platinum font-bold border-t-2 border-pale-slate sticky bottom-[-1] left-0">
     <tr>
       <td className="px-4 py-4 text-sm uppercase tracking-wider border-r border-pale-slate">
         Total
       </td>
 
       <td
-        colSpan={colSpanCount}
-        className="px-2 py-4 text-center border-r border-pale-slate"
+        colSpan={1}
+        className="px-2 py-4 text-left border-r border-pale-slate"
       >
-        <div className="flex flex-col items-center justify-center gap-1">
+        <div className="flex flex-col items-center gap-1">
           <span className="text-sm">{total}</span>
         </div>
       </td>
 
-      {/* 3. Empty Action Cell */}
-      <td className="px-2 py-4"></td>
+      <td colSpan={colSpanCount} className="px-2 py-4"></td>
     </tr>
   </tfoot>
 );

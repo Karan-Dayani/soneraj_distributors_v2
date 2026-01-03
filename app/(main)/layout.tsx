@@ -5,6 +5,7 @@ import { UserProvider } from "@/app/context/UserContext";
 import { CartProvider } from "../context/CartContext";
 import Header from "../components/Header";
 import QueryProvider from "../components/QueryProvider";
+import { ToastProvider } from "../context/ToastContext";
 
 export default async function MainLayout({
   children,
@@ -36,15 +37,17 @@ export default async function MainLayout({
   return (
     <UserProvider value={userData}>
       <CartProvider>
-        <QueryProvider>
-          <div className="h-12">
-            <Header />
-          </div>
+        <ToastProvider>
+          <QueryProvider>
+            <div className="h-12">
+              <Header />
+            </div>
 
-          <main className="flex-1 bg-bright-snow overflow-auto h-[calc(100vh-3rem)] no-scrollbar">
-            {children}
-          </main>
-        </QueryProvider>
+            <main className="flex-1 bg-bright-snow overflow-auto h-[calc(100vh-3rem)] no-scrollbar">
+              {children}
+            </main>
+          </QueryProvider>
+        </ToastProvider>
       </CartProvider>
     </UserProvider>
   );

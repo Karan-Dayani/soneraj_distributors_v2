@@ -3,12 +3,13 @@
 
 import { useProductVariants } from "@/app/utils/hooks/useProductVarients";
 import { redirect, useParams } from "next/navigation";
-import { BottleWine, Plus, Warehouse } from "lucide-react";
+import { BottleWine, ShoppingCart, Warehouse } from "lucide-react";
 import { Database } from "@/types/supabase";
 import { useCart, CartVariant } from "@/app/context/CartContext";
 import { useState } from "react";
 import Loader from "@/app/components/Loader";
 import Error from "@/app/components/Error";
+import { useToast } from "@/app/context/ToastContext";
 
 type ProductVariant = Pick<
   Database["public"]["Tables"]["Product_Stock"]["Row"],
@@ -26,6 +27,7 @@ type ProductVariant = Pick<
 
 export default function Product() {
   const params = useParams();
+  const { addToast } = useToast();
   const { id } = params;
   const {
     data: productVariants,
@@ -79,6 +81,7 @@ export default function Product() {
 
     if (variantsToUpdate.length > 0) {
       updateProductInCart(Number(id), productName, variantsToUpdate);
+      addToast("Successfully Added to cart.", "success");
       redirect("/");
     }
   };
@@ -100,37 +103,54 @@ export default function Product() {
             {productVariants[0]?.Products?.name}
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {productVariants?.map((variant: ProductVariant) => {
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+          {productVariants?.map((variant) => {
             const currentValue = getInputValue(variant.id);
+
             return (
               <div
                 key={variant.id}
-                className="bg-white rounded-xl border border-alabaster-grey shadow-sm overflow-hidden hover:border-pale-slate hover:shadow-md transition-all duration-200 group"
+                // Mobile: Flex Row (Compact) | Desktop: Block (Card)
+                className="
+              group relative overflow-hidden transition-all duration-200
+              bg-white border border-alabaster-grey rounded-xl shadow-sm
+              hover:border-pale-slate hover:shadow-md
+              flex flex-row items-center justify-between p-4 gap-4
+              sm:block sm:p-0
+            "
               >
-                {/* Card Header: Size & Weight */}
-                <div className="px-5 py-4 bg-bright-snow border-b border-platinum flex justify-between items-start">
-                  <div>
-                    <span className="block text-[10px] font-bold text-slate-grey uppercase tracking-wider mb-1">
+                {/* --- Section 1: Info (Size & Stock) --- */}
+                <div className="flex flex-col sm:bg-bright-snow sm:border-b sm:border-platinum sm:px-5 sm:py-4 sm:flex-row sm:justify-between sm:items-start">
+                  {/* Size Label */}
+                  <div className="flex flex-col">
+                    <span className="hidden sm:block text-[10px] font-bold text-slate-grey uppercase tracking-wider mb-1">
                       Size
                     </span>
-                    <span className="text-2xl font-bold text-gunmetal">
+                    <span className="text-lg sm:text-2xl font-bold text-gunmetal">
                       {variant.Bottle_Sizes?.size_ml}
                     </span>
+                    {/* Mobile Only: Stock Label appears below size */}
+                    <div className="flex sm:hidden items-center gap-1 mt-1 text-xs font-medium text-pale-slate-2">
+                      <Warehouse size={12} />
+                      <span>{variant.quantity} in stock</span>
+                    </div>
                   </div>
 
-                  {/* Weight Tag */}
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-alabaster-grey rounded text-xs font-medium text-pale-slate-2">
+                  {/* Desktop Only: Stock Badge (Hidden on mobile to save space) */}
+                  <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-white border border-alabaster-grey rounded text-xs font-medium text-pale-slate-2">
                     <Warehouse size={12} />
                     {variant.quantity}
                   </div>
                 </div>
 
-                {/* Card Body: Input */}
-                <div className="p-5">
-                  <label className="block text-sm font-medium text-iron-grey mb-2">
+                {/* --- Section 2: Input Area --- */}
+                <div className="w-24 sm:w-full sm:p-5">
+                  {/* Label: Visible on Desktop, Hidden on Mobile */}
+                  <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
                     Quantity
                   </label>
+
                   <div className="relative">
                     <input
                       type="number"
@@ -138,21 +158,26 @@ export default function Product() {
                       value={currentValue}
                       onChange={(e) => {
                         const val = e.target.value;
-                        console.log(`Typing ID ${variant.id}:`, val); // <--- DEBUG LOG
-
                         setLocalQuantities((prev) => ({
                           ...prev,
                           [variant.id]: val,
                         }));
                       }}
                       className="
-                      w-full px-4 py-3 rounded-lg
-                      bg-bright-snow border border-pale-slate
-                      text-gunmetal font-bold text-lg
-                      placeholder:text-pale-slate-2
-                      focus:outline-none focus:ring-2 focus:ring-gunmetal focus:bg-white
-                      transition-all
-                    "
+                    w-full rounded-lg text-center sm:text-left
+                    bg-bright-snow border border-pale-slate
+                    text-gunmetal font-bold
+                    
+                    /* Mobile Input Sizing */
+                    py-2 text-base
+                    
+                    /* Desktop Input Sizing */
+                    sm:px-4 sm:py-3 sm:text-lg
+                    
+                    placeholder:text-pale-slate-2
+                    focus:outline-none focus:ring-2 focus:ring-gunmetal focus:bg-white focus:border-transparent
+                    transition-all
+                  "
                     />
                   </div>
                 </div>
@@ -171,7 +196,7 @@ export default function Product() {
             transition-all duration-200 w-full md:w-auto justify-center
           "
           >
-            <Plus size={20} />
+            <ShoppingCart size={20} />
             <span>Add to cart</span>
           </button>
         </div>

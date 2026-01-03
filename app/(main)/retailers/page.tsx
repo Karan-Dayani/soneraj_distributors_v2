@@ -15,8 +15,10 @@ import {
   useDeleteCustomer,
 } from "@/app/utils/hooks/useCustomers";
 import { useDebounce } from "@/app/utils/hooks/useDebounce";
+import { useToast } from "@/app/context/ToastContext";
 
 export default function Retailers() {
+  const { addToast } = useToast();
   const [input, setInput] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState<string | null>(null);
   const debouncedSearch = useDebounce(searchInput as string, 500);
@@ -85,10 +87,14 @@ export default function Retailers() {
                   {
                     onSuccess: () => {
                       setInput(null);
+                      addToast("Added Retailer.", "success");
                     },
 
                     onError: (err) => {
-                      console.log("Add failed!", err.message);
+                      addToast(
+                        "Failed To Add Retailer " + err.message,
+                        "error"
+                      );
                     },
                   }
                 );
@@ -149,11 +155,14 @@ export default function Retailers() {
                       onClick={() =>
                         deleteCustomer(retailer.id, {
                           onSuccess: () => {
-                            console.log("Delete worked!");
+                            addToast("Removed Retailer.", "success");
                           },
 
                           onError: (err) => {
-                            console.log("Delete failed!", err.message);
+                            addToast(
+                              "Failed to remove retailer " + err.message,
+                              "error"
+                            );
                           },
                         })
                       }
