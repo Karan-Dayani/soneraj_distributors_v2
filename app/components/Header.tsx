@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import {
+  DiamondPlus,
   Home,
   Layers,
   LogOut as LogOutIcon,
@@ -21,7 +22,8 @@ const menuItems = [
   { name: "Cart", icon: <ShoppingCart size={20} />, route: "/cart" },
   { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
   { name: "Orders", icon: <Package size={20} />, route: "/" },
-  { name: "Stock", icon: <Layers size={20} />, route: "/" },
+  { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
+  { name: "Purchase", icon: <DiamondPlus size={20} />, route: "/purchase" },
 ];
 
 export default function Header() {

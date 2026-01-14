@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { RefreshCcw, Trash2, Check } from "lucide-react"; // Icons
 import CustomAlert from "@/app/components/CustomAlert";
 import Error from "@/app/components/Error";
 import {
@@ -12,70 +14,72 @@ import { useCart } from "@/app/context/CartContext";
 import { useToast } from "@/app/context/ToastContext";
 import { useCustomers } from "@/app/utils/hooks/useCustomers";
 import { useDebounce } from "@/app/utils/hooks/useDebounce";
-import { Check, ChevronDown, RefreshCcw, Store, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import SearchSelect from "@/app/components/SearchSelectDropdown";
+import { Database } from "@/types/supabase";
+
+type Customer = Database["public"]["Tables"]["Customers"]["Row"];
 
 export default function CheckoutPage() {
   const { addToast } = useToast();
   const { cart, removeProduct, clearCart, totalItems, getUniqueSizes } =
     useCart();
+
+  // Cart Data
   const products = Object.values(cart);
   const sizes = getUniqueSizes();
 
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const [query, setQuery] = useState<string>("");
-  const debouncedQuery = useDebounce(query, 500);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [selectedRetailer, setSelectedRetailer] = useState<number | null>(null);
-
+  // Modal States
   const [clearCartModal, setClearCartModal] = useState<boolean>(false);
   const [confirmModal, setConfirmModal] = useState<boolean>(false);
 
-  const { data: Customers } = useCustomers({ search: debouncedQuery });
+  // Search & Retailer State
+  const [query, setQuery] = useState<string>("");
+  const debouncedQuery = useDebounce(query, 500);
+  const [selectedRetailerId, setSelectedRetailerId] = useState<number | null>(
+    null
+  );
 
-  const handleSelect = (customer: {
-    id: number;
-    name: string | null;
-    created_at: string;
-  }) => {
-    setSelectedRetailer(customer.id);
-    setQuery(customer.name as string);
-    setIsOpen(false);
-    console.log("Selected ID:", customer.id);
+  // API Hook
+  const { data: Customers, isLoading } = useCustomers({
+    search: debouncedQuery,
+  });
+
+  // --- HANDLERS ---
+
+  // 1. Handle Search (Connected to SearchSelect)
+  const handleRetailerSearch = (q: string) => {
+    setQuery(q); // Updates state -> triggers debounce -> triggers useCustomers
   };
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [wrapperRef, selectedRetailer, query]);
+  // 2. Handle Selection (Connected to SearchSelect)
+  const handleRetailerSelect = (customer: Customer) => {
+    setSelectedRetailerId(customer.id);
+  };
 
+  const handleConfirmOrder = () => {
+    if (!selectedRetailerId) {
+      addToast("Please select a retailer first.", "warning");
+      return;
+    }
+    setConfirmModal(false);
+    console.log("Order Confirmed for Retailer:", selectedRetailerId);
+    addToast("Order placed successfully!", "success");
+  };
+
+  // --- TABLE ROWS GENERATION ---
   const tableRows: MatrixRow[] = products.map((prod) => {
     const cells: Record<string, React.ReactNode> = {};
-
     sizes.forEach((size) => {
       const variant = Object.values(prod.variants).find(
         (v) => v.sizeName === size
       );
-
-      if (variant) {
-        cells[size] = (
-          <div className="flex flex-col items-center justify-center gap-1">
-            <span className="text-sm font-semibold text-iron-grey">
-              {variant.quantity}
-            </span>
-          </div>
-        );
-      } else {
-        cells[size] = null;
-      }
+      cells[size] = variant ? (
+        <div className="flex flex-col items-center justify-center gap-1">
+          <span className="text-sm font-semibold text-iron-grey">
+            {variant.quantity}
+          </span>
+        </div>
+      ) : null;
     });
 
     return {
@@ -132,94 +136,37 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer Actions */}
         <div className="mt-4 p-4 bg-bright-snow border border-alabaster-grey rounded-xl shadow-sm">
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            {/* 1. SELECT RETAILER */}
-            <div className="relative flex-1 w-full group" ref={wrapperRef}>
-              {/* Left Icon */}
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-pale-slate-2 group-focus-within:text-gunmetal transition-colors duration-300 pointer-events-none z-10">
-                <Store size={20} strokeWidth={2} />
-              </div>
-
-              {/* Search Input (Replaces Select) */}
-              <input
-                type="text"
-                className="w-full bg-white border border-alabaster-grey text-gunmetal font-medium py-3.5 pl-12 pr-10 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gunmetal/10 focus:border-gunmetal transition-all duration-200 placeholder-pale-slate"
-                placeholder="Search or select a retailer..."
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setIsOpen(true);
-                  if (
-                    selectedRetailer &&
-                    Number(e.target.value) !== selectedRetailer
-                  ) {
-                    setSelectedRetailer(null); // Clear selection if user modifies text
-                  }
-                }}
-                onFocus={() => setIsOpen(true)}
+          <div className="flex flex-col sm:flex-row items-end gap-4">
+            {/* 1. REUSABLE SEARCH SELECT */}
+            <div className="flex-1 w-full">
+              <SearchSelect
+                // Data Props
+                options={Customers?.data || []}
+                isLoading={isLoading} // Pass loading state if available from hook
+                // Config Props
+                displayKey="name"
+                idKey="id"
+                placeholder="Search retailer..."
+                // label={undefined} // Hides the top label to match your previous layout
+                // Event Handlers
+                onSearch={handleRetailerSearch}
+                onSelect={handleRetailerSelect}
+                onClear={() => setSelectedRetailerId(null)}
               />
-
-              {/* Right Chevron */}
-              <div
-                className={`absolute right-4 top-1/2 -translate-y-1/2 text-pale-slate-2 pointer-events-none transition-transform duration-200 ${
-                  isOpen ? "rotate-180" : ""
-                }`}
-              >
-                <ChevronDown size={16} strokeWidth={3} />
-              </div>
-
-              {/* Dropdown Options List */}
-              {isOpen && (
-                <div className="absolute mt-2 w-full bg-white border border-alabaster-grey rounded-lg shadow-xl z-50 max-h-40 overflow-y-auto overflow-x-hidden animate-in fade-in zoom-in-95 duration-100">
-                  {Customers?.data.length === 0 ? (
-                    <div className="p-4 text-center text-sm text-pale-slate-2">
-                      No retailers found.
-                    </div>
-                  ) : (
-                    <ul className="py-1">
-                      {Customers?.data.map((customer) => {
-                        const isSelected = selectedRetailer === customer.id;
-                        return (
-                          <li
-                            key={customer.id}
-                            onClick={() => handleSelect(customer)}
-                            className={`px-4 py-3 text-sm cursor-pointer flex items-center justify-between group transition-colors
-                          ${
-                            isSelected
-                              ? "bg-bright-snow"
-                              : "hover:bg-bright-snow"
-                          }
-                        `}
-                          >
-                            <span
-                              className={`font-medium ${
-                                isSelected ? "text-gunmetal" : "text-iron-grey"
-                              }`}
-                            >
-                              {customer.name}
-                            </span>
-                            {isSelected && (
-                              <Check size={16} className="text-gunmetal" />
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-              )}
             </div>
 
-            {/* 2. ACTION BUTTON (Fixed width or auto) */}
+            {/* 2. CONFIRM BUTTON */}
             <button
               onClick={() => setConfirmModal(true)}
-              disabled={false}
-              // Logic: Standard styles -> Hover styles -> Disabled overrides
-              className="w-full sm:w-auto min-w-[180px] flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-lg bg-gunmetal text-white font-semibold shadow-md cursor-pointer
-                   hover:bg-shadow-grey  transition-all duration-200 
-                   disabled:opacity-50 disabled:cursor-not-allowed  disabled:shadow-none"
+              disabled={!selectedRetailerId} // Optional: Disable if no retailer selected
+              className="
+                w-full sm:w-auto min-w-[180px] flex items-center justify-center gap-2.5 px-6 py-3.5 
+                rounded-lg bg-gunmetal text-white font-semibold shadow-md cursor-pointer
+                hover:bg-shadow-grey transition-all duration-200 
+                disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+              "
             >
               <Check size={20} strokeWidth={3} />
               Confirm Order
@@ -228,6 +175,7 @@ export default function CheckoutPage() {
         </div>
       </div>
 
+      {/* Modals */}
       <CustomAlert
         isOpen={clearCartModal}
         onClose={() => setClearCartModal(false)}
@@ -237,18 +185,15 @@ export default function CheckoutPage() {
           setClearCartModal(false);
         }}
         title="Clear Cart"
-        message="Are you sure you want to clear cart ?"
+        message="Are you sure you want to clear cart?"
       />
 
       <CustomAlert
         isOpen={confirmModal}
         onClose={() => setConfirmModal(false)}
-        onConfirm={() => {
-          setConfirmModal(false);
-          console.log("Order Confirmed!");
-        }}
+        onConfirm={handleConfirmOrder}
         title="Order Confirmation"
-        message="Are you sure you want to add the order ?"
+        message="Are you sure you want to add the order?"
         type="info"
       />
     </>

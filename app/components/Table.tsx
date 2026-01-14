@@ -10,7 +10,13 @@ export type MatrixRow = {
 // ---------------------------------------------------------
 // 1. THE HEADER
 // ---------------------------------------------------------
-export const TableHeader = ({ sizes }: { sizes: string[] }) => (
+export const TableHeader = ({
+  sizes,
+  actionCell = true,
+}: {
+  sizes: string[];
+  actionCell?: boolean;
+}) => (
   <thead className="bg-iron-grey text-white sticky top-0">
     <tr>
       <th
@@ -25,19 +31,21 @@ export const TableHeader = ({ sizes }: { sizes: string[] }) => (
         <th
           key={i}
           scope="col"
-          className="bg-iron-grey px-2 py-3 text-center text-xs font-bold tracking-wider uppercase border-b border-gunmetal border-r"
-          style={{ minWidth: "80px" }}
+          className="bg-iron-grey text-center text-xs font-bold tracking-wider uppercase border-b border-gunmetal border-r"
+          style={{ minWidth: "50px" }}
         >
           {size}
         </th>
       ))}
 
-      <th
-        scope="col"
-        className="bg-iron-grey px-2 py-3 w-16 border-b border-l border-gunmetal"
-      >
-        {/* Empty Header */}
-      </th>
+      {actionCell && (
+        <th
+          scope="col"
+          className="bg-iron-grey px-2 py-3 w-16 border-b border-gunmetal"
+        >
+          {/* Empty Header */}
+        </th>
+      )}
     </tr>
   </thead>
 );
@@ -47,9 +55,11 @@ export const TableHeader = ({ sizes }: { sizes: string[] }) => (
 export const TableBody = ({
   rows,
   sizes,
+  actionCell = true,
 }: {
   sizes: string[];
   rows: MatrixRow[];
+  actionCell?: boolean;
 }) => (
   <tbody className="bg-white">
     {rows.map((row) => (
@@ -58,7 +68,7 @@ export const TableBody = ({
         className="border-b border-alabaster-grey last:border-b-0 hover:bg-bright-snow transition-colors duration-150"
       >
         {/* PRODUCT NAME (Standard Cell) */}
-        <td className="px-4 py-4 text-sm font-bold text-gunmetal border-r border-alabaster-grey">
+        <td className="px-4 py-4 text-sm font-bold text-gunmetal border-b border-r border-alabaster-grey">
           {row.label}
         </td>
 
@@ -68,7 +78,7 @@ export const TableBody = ({
           return (
             <td
               key={`${row.id}-${size}`}
-              className="px-2 py-4 text-center border-r border-alabaster-grey"
+              className="text-center border-b border-r border-alabaster-grey"
             >
               {cellContent ? (
                 cellContent
@@ -82,9 +92,11 @@ export const TableBody = ({
         })}
 
         {/* ACTION COLUMN */}
-        <td className="px-2 py-4 text-center w-16">
-          <div className="flex items-center justify-center">{row.action}</div>
-        </td>
+        {actionCell && (
+          <td className="px-2 py-4 text-center w-16 border-b border-alabaster-grey">
+            <div className="flex items-center justify-center">{row.action}</div>
+          </td>
+        )}
       </tr>
     ))}
   </tbody>
@@ -92,27 +104,35 @@ export const TableBody = ({
 
 export const TableFooter = ({
   total,
-  colSpanCount,
+  colSpanCount, // This should equal sizes.length
+  actionCell = true, // Pass this prop so it matches Body/Header!
 }: {
   total: number;
   colSpanCount: number;
+  actionCell?: boolean;
 }) => (
-  <tfoot className="bg-platinum font-bold border-t-2 border-pale-slate sticky bottom-[-1] left-0">
+  // Use bottom-0 for standard sticky footer
+  <tfoot className="bg-platinum font-bold border-t-2 border-pale-slate sticky bottom-0 z-10">
     <tr>
-      <td className="px-4 py-4 text-sm uppercase tracking-wider border-r border-pale-slate">
+      {/* 1. Label Column */}
+      <td className="px-4 py-4 text-shodow-grey text-sm font-black uppercase tracking-wider border-r border-pale-slate bg-platinum">
         Total
       </td>
 
+      {/* 2. Total Value Column (Spans ALL sizes) */}
       <td
-        colSpan={1}
-        className="px-2 py-4 text-left border-r border-pale-slate"
+        colSpan={colSpanCount}
+        className="px-2 py-4 border-r border-pale-slate text-left"
       >
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-sm">{total}</span>
-        </div>
+        <span className=" text-shodow-grey px-3 py-1 rounded-md text-sm font-black">
+          {total}
+        </span>
       </td>
 
-      <td colSpan={colSpanCount} className="px-2 py-4"></td>
+      {/* 3. Action Column (Conditional) */}
+      {actionCell && (
+        <td className="px-2 py-4 bg-platinum border-pale-slate"></td>
+      )}
     </tr>
   </tfoot>
 );

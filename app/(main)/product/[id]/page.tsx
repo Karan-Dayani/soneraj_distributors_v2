@@ -1,7 +1,5 @@
 // app/product/[id]/page.tsx
 "use client";
-
-import { useProductVariants } from "@/app/utils/hooks/useProductVarients";
 import { redirect, useParams } from "next/navigation";
 import { BottleWine, ShoppingCart, Warehouse } from "lucide-react";
 import { Database } from "@/types/supabase";
@@ -10,6 +8,7 @@ import { useState } from "react";
 import Loader from "@/app/components/Loader";
 import Error from "@/app/components/Error";
 import { useToast } from "@/app/context/ToastContext";
+import { useProductVariants } from "@/app/utils/hooks/useProducts";
 
 type ProductVariant = Pick<
   Database["public"]["Tables"]["Product_Stock"]["Row"],
