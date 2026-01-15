@@ -8,6 +8,7 @@ type UserData = {
   userId: string;
   username: string;
   email: string | undefined;
+  role: string;
 };
 
 // 2. Create the Context

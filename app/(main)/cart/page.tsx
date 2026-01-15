@@ -16,10 +16,12 @@ import { useCustomers } from "@/app/utils/hooks/useCustomers";
 import { useDebounce } from "@/app/utils/hooks/useDebounce";
 import SearchSelect from "@/app/components/SearchSelectDropdown";
 import { Database } from "@/types/supabase";
+import { useUser } from "@/app/context/UserContext";
 
 type Customer = Database["public"]["Tables"]["Customers"]["Row"];
 
 export default function CheckoutPage() {
+  const { userId } = useUser();
   const { addToast } = useToast();
   const { cart, removeProduct, clearCart, totalItems, getUniqueSizes } =
     useCart();
@@ -61,8 +63,23 @@ export default function CheckoutPage() {
       addToast("Please select a retailer first.", "warning");
       return;
     }
+    // Sales_Order Data
+    // console.log({
+    //   customerid: selectedRetailerId,
+    //   userId: userId,
+    //   status: "pending",
+    // });
+
+    // Sales_Order_Items
+    // products.map((p) => {
+    //   Object.entries(p.variants).map(([key, value]) => {
+    //     console.log({ productStockid: value.stockId, qty: value.quantity });
+    //   });
+    // });
+
+    // Order_Items_Batches
+
     setConfirmModal(false);
-    console.log("Order Confirmed for Retailer:", selectedRetailerId);
     addToast("Order placed successfully!", "success");
   };
 

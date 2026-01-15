@@ -100,21 +100,21 @@ export type Database = {
           created_at: string;
           id: number;
           product_id: number | null;
-          quantity: number | null;
+          quantity: number;
           size_id: number | null;
         };
         Insert: {
           created_at?: string;
           id?: number;
           product_id?: number | null;
-          quantity?: number | null;
+          quantity: number;
           size_id?: number | null;
         };
         Update: {
           created_at?: string;
           id?: number;
           product_id?: number | null;
-          quantity?: number | null;
+          quantity?: number;
           size_id?: number | null;
         };
         Relationships: [
@@ -169,14 +169,17 @@ export type Database = {
       profiles: {
         Row: {
           id: string;
+          role: string | null;
           username: string;
         };
         Insert: {
           id: string;
+          role?: string | null;
           username: string;
         };
         Update: {
           id?: string;
+          role?: string | null;
           username?: string;
         };
         Relationships: [];

@@ -24,7 +24,7 @@ export default async function MainLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username,role")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -32,6 +32,7 @@ export default async function MainLayout({
     userId: user.id,
     email: user.email,
     username: profile?.username || "User",
+    role: profile?.role || "SALES",
   };
 
   return (

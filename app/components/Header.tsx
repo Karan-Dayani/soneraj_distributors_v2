@@ -21,13 +21,13 @@ const menuItems = [
   { name: "Home", icon: <Home size={20} />, route: "/" },
   { name: "Cart", icon: <ShoppingCart size={20} />, route: "/cart" },
   { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
-  { name: "Orders", icon: <Package size={20} />, route: "/" },
+  { name: "Orders", icon: <Package size={20} />, route: "/orders" },
   { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
   { name: "Purchase", icon: <DiamondPlus size={20} />, route: "/purchase" },
 ];
 
 export default function Header() {
-  const { username } = useUser();
+  const { username, role } = useUser();
   const { logout } = useLogout();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -77,7 +77,7 @@ export default function Header() {
         <div className="min-w-[16rem] flex flex-col h-full">
           <div className="px-6 py-6 border-b border-gunmetal flex items-center justify-between">
             <h2 className="text-platinum font-semibold tracking-wider text-md">
-              Hi, {username}
+              Hi, {username}, {role}
             </h2>
           </div>
 

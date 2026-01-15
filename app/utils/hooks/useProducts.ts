@@ -41,7 +41,8 @@ export function useProductVariants(productId: number) {
           ),
           Products (   
             name      
-          )
+          ),
+          Stock_Batches (*)
         `
         )
         .eq("product_id", productId);
