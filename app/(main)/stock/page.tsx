@@ -7,7 +7,7 @@ import {
   useStock,
   useUpdateStock,
 } from "@/app/utils/hooks/useStock";
-import { Layers, Pen, Trash2, Save } from "lucide-react";
+import { Layers, Pen, Trash2, Save, Search } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import Error from "@/app/components/Error";
 import CustomModal from "@/app/components/CustomModal";
@@ -54,6 +54,7 @@ export default function Stock() {
   const { mutate: updateStock } = useUpdateStock();
 
   // --- State ---
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedBatch, setSelectedBatch] = useState<SelectedBatch | null>(
     null
   );
@@ -151,7 +152,23 @@ export default function Stock() {
     );
   };
 
-  const sortedStockItems = [...(stockItems || [])].sort((a, b) => {
+  const searchTerms = searchQuery
+    .toLowerCase()
+    .split(",")
+    .map((term) => term.trim())
+    .filter((term) => term.length > 0);
+  const filteredStockItems = (stockItems || []).filter((item) => {
+    if (searchTerms.length === 0) return true;
+    return searchTerms.every((term) => {
+      const matchName = item.Products.name.toLowerCase().includes(term);
+      const matchSize = item.Bottle_Sizes.size_ml.toLowerCase().includes(term);
+      const matchBatch = item.Stock_Batches.some((b) =>
+        b.batch_code.toLowerCase().includes(term)
+      );
+      return matchName || matchSize || matchBatch;
+    });
+  });
+  const sortedStockItems = [...filteredStockItems].sort((a, b) => {
     return a.Products.name.localeCompare(b.Products.name);
   });
 
@@ -164,14 +181,41 @@ export default function Stock() {
     <>
       <div className="max-w-6xl mx-auto">
         <div className="sticky top-0 bg-bright-snow z-10 pt-6 md:pt-8 px-6 md:px-8">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-white rounded-lg border border-platinum text-gunmetal shadow-sm">
-              <Layers size={24} />
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white rounded-lg border border-platinum text-gunmetal shadow-sm">
+                <Layers size={24} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gunmetal tracking-tight">
+                  Stock
+                </h1>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gunmetal tracking-tight">
-                Stock
-              </h1>
+
+            <div className="w-full md:w-auto">
+              <div className="relative w-full md:w-fit group">
+                <input
+                  type="search"
+                  name="search"
+                  aria-label="Search stock"
+                  placeholder="Search..."
+                  autoComplete="off"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="
+                    w-full md:w-56 
+                    px-5 py-3 pr-10 
+                    text-md text-shadow-grey bg-white border border-alabaster-grey rounded-xl shadow-sm outline-none 
+                    transition-all duration-300 ease-in-out 
+                    md:focus:w-64 
+                    focus:border-gunmetal focus:ring-1 focus:ring-gunmetal 
+                    placeholder:text-pale-slate-2
+                  "
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-pale-slate-2 pointer-events-none group-focus-within:text-gunmetal transition-colors">
+                  <Search size={20} />
+                </div>
+              </div>
             </div>
           </div>
 

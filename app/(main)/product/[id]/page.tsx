@@ -104,65 +104,71 @@ export default function Product() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-          {productVariants?.map((variant) => {
-            const currentValue = getInputValue(variant.id);
+          {productVariants
+            ?.sort((a, b) => {
+              const quantityA = parseInt(a.Bottle_Sizes?.size_ml as string, 10);
+              const quantityB = parseInt(b.Bottle_Sizes?.size_ml as string, 10);
+              return quantityB - quantityA;
+            })
+            .map((variant) => {
+              const currentValue = getInputValue(variant.id);
 
-            return (
-              <div
-                key={variant.id}
-                // Mobile: Flex Row (Compact) | Desktop: Block (Card)
-                className="
+              return (
+                <div
+                  key={variant.id}
+                  // Mobile: Flex Row (Compact) | Desktop: Block (Card)
+                  className="
               group relative overflow-hidden transition-all duration-200
               bg-white border border-alabaster-grey rounded-xl shadow-sm
               hover:border-pale-slate hover:shadow-md
               flex flex-row items-center justify-between p-4 gap-4
               sm:block sm:p-0
             "
-              >
-                {/* --- Section 1: Info (Size & Stock) --- */}
-                <div className="flex flex-col sm:bg-bright-snow sm:border-b sm:border-platinum sm:px-5 sm:py-4 sm:flex-row sm:justify-between sm:items-start">
-                  {/* Size Label */}
-                  <div className="flex flex-col">
-                    <span className="hidden sm:block text-[10px] font-bold text-slate-grey uppercase tracking-wider mb-1">
-                      Size
-                    </span>
-                    <span className="text-lg sm:text-2xl font-bold text-gunmetal">
-                      {variant.Bottle_Sizes?.size_ml}
-                    </span>
-                    {/* Mobile Only: Stock Label appears below size */}
-                    <div className="flex sm:hidden items-center gap-1 mt-1 text-xs font-medium text-pale-slate-2">
+                >
+                  {/* --- Section 1: Info (Size & Stock) --- */}
+                  <div className="flex flex-col sm:bg-bright-snow sm:border-b sm:border-platinum sm:px-5 sm:py-4 sm:flex-row sm:justify-between sm:items-start">
+                    {/* Size Label */}
+                    <div className="flex flex-col">
+                      <span className="hidden sm:block text-[10px] font-bold text-slate-grey uppercase tracking-wider mb-1">
+                        Size
+                      </span>
+                      <span className="text-lg sm:text-2xl font-bold text-gunmetal">
+                        {variant.Bottle_Sizes?.size_ml}
+                      </span>
+                      {/* Mobile Only: Stock Label appears below size */}
+                      <div className="flex sm:hidden items-center gap-1 mt-1 text-xs font-medium text-pale-slate-2">
+                        <Warehouse size={12} />
+                        <span>{variant.quantity} in stock</span>
+                      </div>
+                    </div>
+
+                    {/* Desktop Only: Stock Badge (Hidden on mobile to save space) */}
+                    <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-white border border-alabaster-grey rounded text-xs font-medium text-pale-slate-2">
                       <Warehouse size={12} />
-                      <span>{variant.quantity} in stock</span>
+                      {variant.quantity}
                     </div>
                   </div>
 
-                  {/* Desktop Only: Stock Badge (Hidden on mobile to save space) */}
-                  <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-white border border-alabaster-grey rounded text-xs font-medium text-pale-slate-2">
-                    <Warehouse size={12} />
-                    {variant.quantity}
-                  </div>
-                </div>
+                  {/* --- Section 2: Input Area --- */}
+                  <div className="w-24 sm:w-full sm:p-5">
+                    {/* Label: Visible on Desktop, Hidden on Mobile */}
+                    <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
+                      Quantity
+                    </label>
 
-                {/* --- Section 2: Input Area --- */}
-                <div className="w-24 sm:w-full sm:p-5">
-                  {/* Label: Visible on Desktop, Hidden on Mobile */}
-                  <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
-                    Quantity
-                  </label>
-
-                  <div className="relative">
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={currentValue}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setLocalQuantities((prev) => ({
-                          ...prev,
-                          [variant.id]: val,
-                        }));
-                      }}
-                      className="
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={currentValue}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setLocalQuantities((prev) => ({
+                            ...prev,
+                            [variant.id]: val,
+                          }));
+                        }}
+                        className="
                     w-full rounded-lg text-center sm:text-left
                     bg-bright-snow border border-pale-slate
                     text-gunmetal font-bold
@@ -177,12 +183,12 @@ export default function Product() {
                     focus:outline-none focus:ring-2 focus:ring-gunmetal focus:bg-white focus:border-transparent
                     transition-all
                   "
-                    />
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
 
         <div className="mt-10 pt-6 border-t border-alabaster-grey flex justify-end">
