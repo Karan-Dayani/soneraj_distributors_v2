@@ -41,7 +41,7 @@ export default function Home() {
     <div className="p-6 md:p-8 max-w-6xl mx-auto">
       {/* --- Page Header --- */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-shadow-grey">Suppliers</h1>
+        <h1 className="text-3xl font-bold text-gunmetal">Suppliers</h1>
         <p className="text-slate-grey text-sm mt-1">
           Available distillery units.
         </p>

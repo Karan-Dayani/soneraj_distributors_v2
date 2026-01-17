@@ -17,6 +17,7 @@ import { useDebounce } from "@/app/utils/hooks/useDebounce";
 import SearchSelect from "@/app/components/SearchSelectDropdown";
 import { Database } from "@/types/supabase";
 import { useUser } from "@/app/context/UserContext";
+import { useAddOrder } from "@/app/utils/hooks/useOrders";
 
 type Customer = Database["public"]["Tables"]["Customers"]["Row"];
 
@@ -38,8 +39,10 @@ export default function CheckoutPage() {
   const [query, setQuery] = useState<string>("");
   const debouncedQuery = useDebounce(query, 500);
   const [selectedRetailerId, setSelectedRetailerId] = useState<number | null>(
-    null
+    null,
   );
+
+  const { mutate: addOrder } = useAddOrder();
 
   // API Hook
   const { data: Customers, isLoading } = useCustomers({
@@ -63,24 +66,36 @@ export default function CheckoutPage() {
       addToast("Please select a retailer first.", "warning");
       return;
     }
-    // Sales_Order Data
-    // console.log({
-    //   customerid: selectedRetailerId,
-    //   userId: userId,
-    //   status: "pending",
-    // });
+    const Sales_Order = {
+      customerid: selectedRetailerId,
+      userId: userId,
+      status: "pending",
+    };
 
-    // Sales_Order_Items
-    // products.map((p) => {
-    //   Object.entries(p.variants).map(([key, value]) => {
-    //     console.log({ productStockid: value.stockId, qty: value.quantity });
-    //   });
-    // });
+    const Sales_Order_Items = products.flatMap((p) => {
+      return Object.entries(p.variants).map(([key, value]) => ({
+        productStockid: value.stockId,
+        qty: value.quantity,
+      }));
+    });
 
-    // Order_Items_Batches
+    addOrder(
+      { Sales_Order, Sales_Order_Items },
+      {
+        onSuccess: () => {
+          addToast("Order Successful!", "success");
+          // Clear your inputs here
+          clearCart();
+          setSelectedRetailerId(null);
+        },
+        onError: (error) => {
+          console.error("Purchase Failed:", error.message);
+          addToast("Failed to add order. Check console.", "error");
+        },
+      },
+    );
 
     setConfirmModal(false);
-    addToast("Order placed successfully!", "success");
   };
 
   // --- TABLE ROWS GENERATION ---
@@ -88,7 +103,7 @@ export default function CheckoutPage() {
     const cells: Record<string, React.ReactNode> = {};
     sizes.forEach((size) => {
       const variant = Object.values(prod.variants).find(
-        (v) => v.sizeName === size
+        (v) => v.sizeName === size,
       );
       cells[size] = variant ? (
         <div className="flex flex-col items-center justify-center gap-1">
@@ -129,7 +144,7 @@ export default function CheckoutPage() {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-shadow-grey">Cart</h1>
+            <h1 className="text-3xl font-bold text-gunmetal">Cart</h1>
             <p className="text-slate-grey text-sm mt-1">
               Available distillery units.
             </p>

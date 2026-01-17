@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import {
   Plus,
   Store,
-  LayoutGrid,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -41,18 +40,11 @@ export default function Retailers() {
       <div className="bg-bright-snow p-8 font-sans text-gunmetal">
         <div className="max-w-4xl mx-auto">
           {/* Page Header */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 bg-white rounded-lg border border-platinum text-gunmetal shadow-sm">
-              <LayoutGrid size={24} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gunmetal tracking-tight">
-                Retailers
-              </h1>
-              <p className="text-sm text-slate-grey mt-1">
-                Manage your distribution retailers.
-              </p>
-            </div>
+          <div className=" mb-8">
+            <h1 className="text-3xl font-bold text-gunmetal">Retailers</h1>
+            <p className="text-sm text-slate-grey mt-1">
+              Manage your distribution retailers.
+            </p>
           </div>
 
           {/* Add Retailer Section */}
@@ -97,10 +89,10 @@ export default function Retailers() {
                       onError: (err) => {
                         addToast(
                           "Failed To Add Retailer " + err.message,
-                          "error"
+                          "error",
                         );
                       },
-                    }
+                    },
                   );
                 }}
                 disabled={!input}
@@ -130,7 +122,7 @@ export default function Retailers() {
                   value={searchInput ? searchInput : ""}
                   onChange={(e) => {
                     setSearchInput(
-                      e.target.value !== "" ? e.target.value : null
+                      e.target.value !== "" ? e.target.value : null,
                     );
                     setPage(1);
                   }}

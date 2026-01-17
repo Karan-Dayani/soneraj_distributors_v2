@@ -18,21 +18,21 @@ export default function Purchase() {
   // supplier
   const { data: suppliers, isLoading: isSupplierLoading } = useSuppliers();
   const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(
-    null
+    null,
   );
 
   // product
   const { data: products } = useProducts();
   const supplierProducts = products?.filter(
-    (p: Product) => p.supplier_id === selectedSupplierId
+    (p: Product) => p.supplier_id === selectedSupplierId,
   );
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null
+    null,
   );
 
   // sizes and all
   const { data: productVariants } = useProductVariants(
-    selectedProductId as number
+    selectedProductId as number,
   );
 
   const { mutate: purchaseStock, isPending } = usePurchaseStock();
@@ -44,7 +44,7 @@ export default function Purchase() {
   const handleInputChange = (
     variantId: number,
     field: "quantity" | "batch_code",
-    value: number | string
+    value: number | string,
   ) => {
     setInputValues((prev) => ({
       ...prev,
@@ -117,7 +117,7 @@ export default function Purchase() {
           console.error("Purchase Failed:", error.message);
           addToast("Failed to save purchase. Check console.", "error");
         },
-      }
+      },
     );
   };
 
@@ -126,7 +126,7 @@ export default function Purchase() {
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-shadow-grey">Purchase</h1>
+        <h1 className="text-3xl font-bold text-gunmetal">Purchase</h1>
         <p className="text-slate-grey text-sm mt-1">Buy distillery units.</p>
       </div>
 
@@ -217,7 +217,7 @@ export default function Purchase() {
                         handleInputChange(
                           variant.id,
                           "quantity",
-                          Number(e.target.value)
+                          Number(e.target.value),
                         );
                       }}
                       className="
@@ -253,7 +253,7 @@ export default function Purchase() {
                         handleInputChange(
                           variant.id,
                           "batch_code",
-                          e.target.value.toUpperCase()
+                          e.target.value.toUpperCase(),
                         )
                       }
                       className="

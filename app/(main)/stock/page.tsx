@@ -7,7 +7,7 @@ import {
   useStock,
   useUpdateStock,
 } from "@/app/utils/hooks/useStock";
-import { Layers, Pen, Trash2, Save, Search } from "lucide-react";
+import { Pen, Trash2, Save, Search } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import Error from "@/app/components/Error";
 import CustomModal from "@/app/components/CustomModal";
@@ -56,7 +56,7 @@ export default function Stock() {
   // --- State ---
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedBatch, setSelectedBatch] = useState<SelectedBatch | null>(
-    null
+    null,
   );
   const [formData, setFormData] = useState({
     batchCode: "",
@@ -66,7 +66,7 @@ export default function Stock() {
   // --- Handlers ---
   const handleEditClick = (
     item: RawStockItem,
-    batch: RawStockItem["Stock_Batches"][0]
+    batch: RawStockItem["Stock_Batches"][0],
   ) => {
     setSelectedBatch({
       stockId: item.id,
@@ -117,7 +117,7 @@ export default function Stock() {
           console.error(err);
           addToast(err.message || "Failed to update stock", "error");
         },
-      }
+      },
     );
   };
 
@@ -148,7 +148,7 @@ export default function Stock() {
         onError: (err) => {
           addToast(err.message || "Failed to delete batch", "error");
         },
-      }
+      },
     );
   };
 
@@ -163,7 +163,7 @@ export default function Stock() {
       const matchName = item.Products.name.toLowerCase().includes(term);
       const matchSize = item.Bottle_Sizes.size_ml.toLowerCase().includes(term);
       const matchBatch = item.Stock_Batches.some((b) =>
-        b.batch_code.toLowerCase().includes(term)
+        b.batch_code.toLowerCase().includes(term),
       );
       return matchName || matchSize || matchBatch;
     });
@@ -182,15 +182,8 @@ export default function Stock() {
       <div className="max-w-6xl mx-auto">
         <div className="sticky top-0 bg-bright-snow z-10 pt-6 md:pt-8 px-6 md:px-8">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white rounded-lg border border-platinum text-gunmetal shadow-sm">
-                <Layers size={24} />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gunmetal tracking-tight">
-                  Stock
-                </h1>
-              </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gunmetal">Stock</h1>
             </div>
 
             <div className="w-full md:w-auto">
@@ -265,7 +258,7 @@ export default function Stock() {
                         // 2. FIX: Call the helper function
                         handleEditClick(item, batch);
                       }}
-                      className="text-slate-grey hover:text-gunmetal p-2 rounded-full hover:bg-platinum transition-colors"
+                      className="text-slate-grey hover:text-gunmetal p-2 rounded-full hover:bg-platinum transition-colors cursor-pointer"
                     >
                       <Pen size={18} />
                     </button>
