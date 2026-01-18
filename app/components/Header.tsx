@@ -20,10 +20,10 @@ import Link from "next/link";
 const menuItems = [
   { name: "Home", icon: <Home size={20} />, route: "/" },
   { name: "Cart", icon: <ShoppingCart size={20} />, route: "/cart" },
-  { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
   { name: "Orders", icon: <Package size={20} />, route: "/orders" },
-  { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
   { name: "Purchase", icon: <DiamondPlus size={20} />, route: "/purchase" },
+  { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
+  { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
 ];
 
 export default function Header() {

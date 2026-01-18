@@ -1,18 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../supabase/client";
 
-export function useOrders() {
+type useOrderOption = {
+  status?: "pending" | "completed";
+};
+
+export function useOrders({ status = "pending" }: useOrderOption = {}) {
   return useQuery({
-    queryKey: ["orders"],
+    queryKey: ["orders", status],
     queryFn: async () => {
-      const { data, error } = await supabase.from("Sales_Orders").select(`
+      const query = supabase
+        .from("Sales_Orders")
+        .select(
+          `
           id,
           status,
-          Customers (
+          Customers!inner (
             *,
-            profiles (*)
+            profiles!inner (*)
           )
-          `);
+          `,
+        )
+        .eq("status", status);
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
