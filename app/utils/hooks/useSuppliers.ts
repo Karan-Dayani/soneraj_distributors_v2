@@ -15,3 +15,15 @@ export function useSuppliers() {
     gcTime: Infinity,
   });
 }
+
+export function useUsers() {
+  return useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}

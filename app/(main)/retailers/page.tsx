@@ -16,10 +16,36 @@ import {
 import { useDebounce } from "@/app/utils/hooks/useDebounce";
 import { useToast } from "@/app/context/ToastContext";
 import CustomAlert from "@/app/components/CustomAlert";
+import { useUsers } from "@/app/utils/hooks/useSuppliers";
+import SimpleSelect from "@/app/components/SelectDropdown";
 
 export default function Retailers() {
   const { addToast } = useToast();
-  const [input, setInput] = useState<string | null>(null);
+  const { data: users } = useUsers();
+  const initialRetailerData = {
+    name: "",
+    address: "",
+    license_no: "",
+    route_no: "",
+    user_id: "",
+  };
+  const [retailerFormData, setRetailerFormData] = useState<{
+    name: string;
+    address: string;
+    license_no: string;
+    route_no: string;
+    user_id: string;
+  }>(initialRetailerData);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setRetailerFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const [searchInput, setSearchInput] = useState<string | null>(null);
   const debouncedSearch = useDebounce(searchInput as string, 500);
   const [page, setPage] = useState(1);
@@ -53,60 +79,140 @@ export default function Retailers() {
               Add New Retailer
             </h2>
 
-            <div className="flex flex-col md:flex-row items-end gap-4">
-              {/* Input Field */}
-              <div className="grow w-full">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-grey ml-1">
-                  Retailer Name
-                  <div className="relative group mt-2">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-pale-slate-2 group-focus-within:text-slate-grey transition-colors pointer-events-none">
-                      <Store size={20} />
+            <div className="flex flex-col gap-6">
+              {/* FORM CONTAINER - GRID SYSTEM */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 1. RETAILER NAME (Full Width) */}
+                <div className="md:col-span-2">
+                  <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                    Retailer Name
+                    <div className="mt-2">
+                      <input
+                        name="name"
+                        value={retailerFormData.name}
+                        onChange={handleInputChange}
+                        type="text"
+                        placeholder="Enter retailer name..."
+                        className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                      />
                     </div>
-                    <input
-                      value={input ? input : ""}
-                      onChange={(e) =>
-                        setInput(e.target.value !== "" ? e.target.value : null)
-                      }
-                      type="text"
-                      placeholder="Enter retailer name..."
-                      className="w-full pl-12 pr-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
-                    />
-                  </div>
-                </label>
+                  </label>
+                </div>
+
+                {/* 2. ADDRESS (Full Width) */}
+                <div className="md:col-span-2">
+                  <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                    Address
+                    <div className="mt-2">
+                      <input
+                        name="address"
+                        value={retailerFormData.address}
+                        onChange={handleInputChange}
+                        type="text"
+                        placeholder="Enter full address..."
+                        className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                {/* 3. LICENSE NO (1/2 Width) */}
+                <div className="w-full">
+                  <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                    License No
+                    <div className="mt-2">
+                      <input
+                        name="license_no"
+                        value={retailerFormData.license_no}
+                        onChange={handleInputChange}
+                        type="text"
+                        placeholder="Lic. Number"
+                        className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                {/* 4. ROUTE NO (1/2 Width) */}
+                <div className="w-full">
+                  <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                    Route No
+                    <div className="mt-2">
+                      <input
+                        name="route_no"
+                        value={retailerFormData.route_no}
+                        onChange={handleInputChange}
+                        type="text"
+                        placeholder="Route #"
+                        className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div className="w-full">
+                  <SimpleSelect
+                    options={users || []}
+                    displayKey="username"
+                    idKey="id"
+                    label="Supplier"
+                    placeholder="Select supplier"
+                    selectedId={retailerFormData.user_id}
+                    onSelect={(item) => {
+                      setRetailerFormData((prev) => ({
+                        ...prev,
+                        user_id: item.id,
+                      }));
+                    }}
+                    onClear={() => {
+                      setRetailerFormData((prev) => ({
+                        ...prev,
+                        user_id: "", // Reset to empty string
+                      }));
+                    }}
+                  />
+                </div>
               </div>
 
-              {/* Add Button */}
-              <button
-                onClick={() => {
-                  createCustomer(
-                    { name: input as string },
-                    {
-                      onSuccess: () => {
-                        setInput(null);
-                        addToast("Added Retailer.", "success");
-                      },
+              {/* BUTTON (Aligned Right) */}
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => {
+                    const hasEmptyFields = Object.values(retailerFormData).some(
+                      (value) => !value || value.trim() === "",
+                    );
 
-                      onError: (err) => {
+                    if (hasEmptyFields) {
+                      addToast("Please fill in all fields.", "error");
+                      return;
+                    }
+
+                    createCustomer(retailerFormData, {
+                      onSuccess: () => {
+                        addToast("Order Successful!", "success");
+                        // Clear your inputs here
+                        setRetailerFormData(initialRetailerData);
+                      },
+                      onError: (error) => {
+                        console.error("Adding Retailer Failed:", error.message);
                         addToast(
-                          "Failed To Add Retailer " + err.message,
+                          "Failed to add retailer. Check console.",
                           "error",
                         );
                       },
-                    },
-                  );
-                }}
-                disabled={!input}
-                className="
-              flex items-center gap-2 px-8 py-3.5 
-              bg-gunmetal text-white rounded-lg cursor-pointer
-              font-semibold shadow-lg hover:bg-shadow-grey hover:scale-[1.01] active:scale-[0.98] 
-              transition-all duration-200 w-full md:w-auto justify-center
-              disabled:opacity-80 disabled:scale-[1] disabled:bg-gunmetal
-            "
-              >
-                <Plus size={20} strokeWidth={3} />
-                <span>Add</span>
-              </button>
+                    });
+                  }}
+                  className="
+        flex items-center gap-2 px-8 py-3.5 
+        bg-gunmetal text-white rounded-lg cursor-pointer
+        font-semibold shadow-lg hover:bg-shadow-grey hover:scale-[1.01] active:scale-[0.98] 
+        transition-all duration-200 w-full md:w-auto justify-center
+      "
+                >
+                  <Plus size={20} strokeWidth={3} />
+                  <span>Add Retailer</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -144,7 +250,8 @@ export default function Retailers() {
                         {retailer.name?.substring(0, 2).toUpperCase()}
                       </div>
                       <span className="font-medium text-gunmetal">
-                        {retailer.name}
+                        {retailer.name}, {retailer.address} (
+                        {retailer.license_no})
                       </span>
                     </div>
 

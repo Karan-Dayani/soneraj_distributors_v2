@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Search, ChevronDown, Loader2, X, Check } from "lucide-react";
 
 // --- GENERIC PROPS INTERFACE ---
@@ -11,7 +11,7 @@ export interface SearchSelectProps<T> {
   onSelect: (item: T) => void;
   onClear: () => void;
   /** Which property of the object to display (e.g., 'name', 'title') */
-  displayKey: keyof T;
+  displayKey: string;
   /** Unique ID key (e.g., 'id') for React keys and comparison */
   idKey: keyof T;
   /** Label for the input */
@@ -38,6 +38,22 @@ export default function SearchSelect<T extends Record<string, any>>({
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  const getDisplayLabel = useCallback(
+    (item: T | null): string => {
+      if (!item) return "";
+
+      if (displayKey.includes(",")) {
+        return displayKey
+          .split(",")
+          .map((key) => item[key.trim()])
+          .filter(Boolean)
+          .join(" ");
+      }
+      return item[displayKey];
+    },
+    [displayKey],
+  );
+
   // Handle Click Outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -48,13 +64,13 @@ export default function SearchSelect<T extends Record<string, any>>({
         setIsOpen(false);
         // Optional: If you want to reset the input to the selected item's name on blur
         if (selectedItem) {
-          setInputValue(selectedItem[displayKey]);
+          setInputValue(getDisplayLabel(selectedItem));
         }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [selectedItem, displayKey]);
+  }, [selectedItem, getDisplayLabel]);
 
   // AUTO-SCROLL LOGIC: Scrolls input to top/center when opened
   useEffect(() => {
@@ -77,13 +93,13 @@ export default function SearchSelect<T extends Record<string, any>>({
     setIsOpen(true);
 
     // Logic: If user modifies text, clear the "selection" state
-    if (selectedItem && val !== selectedItem[displayKey]) {
+    if (selectedItem && val !== getDisplayLabel(selectedItem)) {
       setSelectedItem(null);
     }
   };
 
   const handleOptionClick = (item: T) => {
-    setInputValue(item[displayKey]); // Display the name
+    setInputValue(getDisplayLabel(item)); // Display the name
     setSelectedItem(item); // Track selection
     onSelect(item); // Notify parent
     setIsOpen(false);
@@ -184,7 +200,7 @@ export default function SearchSelect<T extends Record<string, any>>({
                           isSelected ? "text-gunmetal" : "text-iron-grey"
                         } group-hover:text-gunmetal`}
                       >
-                        {item[displayKey]}
+                        {getDisplayLabel(item)}
                       </span>
 
                       {isSelected && (

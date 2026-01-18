@@ -212,21 +212,26 @@ export default function Stock() {
             </div>
           </div>
 
-          <div className="p-4 bg-gunmetal text-bright-snow border border-alabaster-grey flex justify-between divide-x divide-alabaster-grey">
-            <div className="basis-1/5 flex items-center justify-start px-2">
+          <div className="py-4 bg-gunmetal text-bright-snow border border-alabaster-grey flex justify-between divide-x divide-alabaster-grey">
+            {/* 1. Name: 4/12 mobile, 1/5 desktop */}
+            <div className="basis-4/12 md:basis-1/5 flex items-center justify-start px-2">
               Name
             </div>
-            <div className="basis-1/5 flex items-center justify-center">
+            {/* 2. Size: 2/12 mobile, 1/5 desktop */}
+            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
               Size
             </div>
-            <div className="basis-1/5 flex items-center justify-center">
+            {/* 3. Batch: 3/12 mobile, 1/5 desktop */}
+            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
               Batch
             </div>
-            <div className="basis-1/5 flex items-center justify-center">
+            {/* 4. Qty: 2/12 mobile, 1/5 desktop */}
+            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
               Qty
             </div>
-            <div className="basis-1/5 flex items-center justify-center">
-              Action
+            {/* 5. Edit: 1/12 mobile, 1/5 desktop */}
+            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center px-2">
+              Edit
             </div>
           </div>
         </div>
@@ -237,30 +242,38 @@ export default function Stock() {
               {item.Stock_Batches?.map((batch) => (
                 <div
                   key={batch.id}
-                  className="p-4 bg-bright-snow border border-alabaster-grey flex justify-between divide-x divide-alabaster-grey"
+                  className="py-4 bg-bright-snow border-b border-l border-r border-alabaster-grey flex justify-between divide-x divide-alabaster-grey"
                 >
-                  <div className="basis-1/5 flex items-center justify-start px-2">
+                  {/* Matches Header Col 1 */}
+                  <div className="basis-4/12 md:basis-1/5 flex items-center justify-start px-2">
                     {item.Products.name}
                   </div>
-                  <div className="basis-1/5 flex items-center justify-center">
+
+                  {/* Matches Header Col 2 */}
+                  <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
                     {item.Bottle_Sizes.size_ml}
                   </div>
-                  <div className="basis-1/5 flex items-center justify-center">
+
+                  {/* Matches Header Col 3 */}
+                  <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
                     {batch.batch_code}
                   </div>
-                  <div className="basis-1/5 flex items-center justify-center">
+
+                  {/* Matches Header Col 4 */}
+                  <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
                     {batch.quantity}
                   </div>
-                  <div className="basis-1/5 flex items-center justify-center">
+
+                  {/* Matches Header Col 5 */}
+                  <div className="basis-2/12 md:basis-1/5 flex items-center justify-center px-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        // 2. FIX: Call the helper function
                         handleEditClick(item, batch);
                       }}
-                      className="text-slate-grey hover:text-gunmetal p-2 rounded-full hover:bg-platinum transition-colors cursor-pointer"
+                      className="text-slate-grey hover:text-gunmetal p-1 rounded-full hover:bg-platinum transition-colors cursor-pointer"
                     >
-                      <Pen size={18} />
+                      <Pen size={16} />
                     </button>
                   </div>
                 </div>
@@ -314,7 +327,7 @@ export default function Stock() {
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isDeleting ? (
                 <span>Deleting...</span>
@@ -326,21 +339,13 @@ export default function Stock() {
               )}
             </button>
 
-            <div className="flex gap-3">
-              <button
-                onClick={handleClose}
-                className="px-4 py-2 text-slate-grey hover:bg-platinum rounded-md transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdate}
-                className="flex items-center gap-2 px-4 py-2 bg-gunmetal text-white hover:bg-opacity-90 rounded-md transition-colors shadow-sm"
-              >
-                <Save size={18} />
-                <span>Save Changes</span>
-              </button>
-            </div>
+            <button
+              onClick={handleUpdate}
+              className="flex items-center gap-2 px-4 py-2 bg-gunmetal text-white hover:bg-opacity-90 rounded-md transition-colors shadow-sm cursor-pointer"
+            >
+              <Save size={18} />
+              <span>Save Changes</span>
+            </button>
           </div>
         </div>
       </CustomModal>

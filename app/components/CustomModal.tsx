@@ -44,7 +44,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
           </h3>
           <button
             onClick={onClose}
-            className="text-pale-slate-2 hover:text-gunmetal hover:bg-bright-snow p-1 rounded-md transition-all"
+            className="text-pale-slate-2 hover:text-gunmetal hover:bg-bright-snow p-1 rounded-md transition-all cursor-pointer"
           >
             <X size={20} />
           </button>

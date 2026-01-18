@@ -16,13 +16,11 @@ import { useCustomers } from "@/app/utils/hooks/useCustomers";
 import { useDebounce } from "@/app/utils/hooks/useDebounce";
 import SearchSelect from "@/app/components/SearchSelectDropdown";
 import { Database } from "@/types/supabase";
-import { useUser } from "@/app/context/UserContext";
 import { useAddOrder } from "@/app/utils/hooks/useOrders";
 
 type Customer = Database["public"]["Tables"]["Customers"]["Row"];
 
 export default function CheckoutPage() {
-  const { userId } = useUser();
   const { addToast } = useToast();
   const { cart, removeProduct, clearCart, totalItems, getUniqueSizes } =
     useCart();
@@ -68,7 +66,6 @@ export default function CheckoutPage() {
     }
     const Sales_Order = {
       customerid: selectedRetailerId,
-      userId: userId,
       status: "pending",
     };
 
@@ -178,7 +175,7 @@ export default function CheckoutPage() {
                 options={Customers?.data || []}
                 isLoading={isLoading} // Pass loading state if available from hook
                 // Config Props
-                displayKey="name"
+                displayKey="name,address,license_no"
                 idKey="id"
                 placeholder="Search retailer..."
                 // label={undefined} // Hides the top label to match your previous layout

@@ -37,7 +37,10 @@ export function useCustomers({
       if (search) {
         // ilike is "Case Insensitive Like"
         // %search% means "contains search"
-        query = query.ilike("name", `%${search}%`);
+        // query = query.ilike("name", `%${search}%`);
+        query = query.or(
+          `name.ilike.%${search}%,address.ilike.%${search}%,license_no.ilike.%${search}%`,
+        );
       }
 
       const { data, count, error } = await query;
@@ -59,7 +62,13 @@ export function useCreateCustomer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newCustomer: { name: string }) => {
+    mutationFn: async (newCustomer: {
+      name: string;
+      address: string;
+      license_no: string;
+      route_no: string;
+      user_id: string;
+    }) => {
       const { data, error } = await supabase
         .from("Customers")
         .insert(newCustomer)

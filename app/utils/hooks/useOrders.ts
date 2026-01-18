@@ -8,8 +8,10 @@ export function useOrders() {
       const { data, error } = await supabase.from("Sales_Orders").select(`
           id,
           status,
-          Customers (*),
-          profiles(*)
+          Customers (
+            *,
+            profiles (*)
+          )
           `);
 
       if (error) throw error;
@@ -34,7 +36,7 @@ export function useOrderItems({ id }: { id: number }) {
 }
 
 export type AddOrderType = {
-  Sales_Order: { customerid: number; userId: string; status: string };
+  Sales_Order: { customerid: number; status: string };
   Sales_Order_Items: {
     productStockid: number;
     qty: number;
@@ -49,7 +51,6 @@ export function useAddOrder() {
         .insert([
           {
             customer_id: Sales_Order.customerid,
-            user_id: Sales_Order.userId,
             status: Sales_Order.status as "pending" | "completed",
           },
         ])

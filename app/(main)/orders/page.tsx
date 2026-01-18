@@ -26,6 +26,10 @@ export default function Orders() {
     return <Error error={error?.message as string} />;
   }
 
+  if (orders && orders?.length < 1) {
+    return <Error error="No order." />;
+  }
+
   return (
     <>
       <div className="p-6 md:p-8 max-w-6xl mx-auto">
@@ -60,12 +64,13 @@ export default function Orders() {
                         : "text-iron-grey group-hover:text-gunmetal"
                     }`}
                   >
-                    {order.Customers?.name || "Unknown Customer"}
+                    {order.Customers?.name || "Unknown Customer"}{" "}
+                    {order.Customers?.address} ({order.Customers?.license_no})
                   </h2>
 
                   <div className="flex items-center text-xs text-slate-grey">
                     <span className="font-medium text-iron-grey truncate">
-                      {order.profiles?.username}
+                      {order.Customers?.profiles?.username}
                     </span>
                   </div>
                 </div>
