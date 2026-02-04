@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check, List, X } from "lucide-react";
+import { ChevronDown, Check, X } from "lucide-react";
 
 // --- GENERIC PROPS INTERFACE ---
 export interface SimpleSelectProps<T> {
@@ -18,7 +18,7 @@ export interface SimpleSelectProps<T> {
   placeholder?: string;
   /** Optional: Currently selected ID (for controlled component usage) */
   selectedId?: string | number | null;
-  /** Optional: Custom icon to display on the left (defaults to List) */
+  /** Optional: Custom icon to display on the left. If omitted, no icon space is reserved. */
   icon?: React.ElementType;
 }
 
@@ -31,7 +31,7 @@ export default function SimpleSelect<T extends Record<string, any>>({
   label,
   placeholder = "Select an option...",
   selectedId,
-  icon: Icon = List,
+  icon: Icon, // Removed default assignment to make it truly optional
 }: SimpleSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -89,25 +89,24 @@ export default function SimpleSelect<T extends Record<string, any>>({
       )}
 
       <div className="relative group">
-        {/* Left Icon (Visual only) */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-pale-slate-2 pointer-events-none z-10">
-          <Icon
-            size={20}
-            strokeWidth={2}
-            // className="group-hover:text-gunmetal transition-colors"
-          />
-        </div>
+        {/* Left Icon - Only renders if Icon prop is provided */}
+        {Icon && (
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-pale-slate-2 pointer-events-none z-10">
+            <Icon size={20} strokeWidth={2} />
+          </div>
+        )}
 
-        {/* Trigger Button (Replaces Input) */}
+        {/* Trigger Button - pl-12 if icon exists, pl-4 if not */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={`
-            w-full pl-12 pr-10 py-3.5 text-left
+            w-full pr-10 py-3.5 text-left
             bg-white border rounded-xl
             text-gunmetal font-medium
             shadow-sm transition-all duration-200
             focus:outline-none focus:border-gunmetal focus:ring-4 focus:ring-gunmetal/5
+            ${Icon ? "pl-12" : "pl-4"}
             ${
               isOpen
                 ? "border-gunmetal"
@@ -126,7 +125,11 @@ export default function SimpleSelect<T extends Record<string, any>>({
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {selectedId && (
             <button
-              onClick={handleClear}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent dropdown from opening when clearing
+                handleClear();
+              }}
               className="text-pale-slate-2 hover:text-gunmetal transition-colors"
             >
               <X size={14} />

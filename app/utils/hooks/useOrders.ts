@@ -5,14 +5,12 @@ type useOrderOption = {
   status?: "pending" | "completed";
 };
 
-export function useOrders({ status = "pending" }: useOrderOption = {}) {
+export function useOrders({ status }: useOrderOption = {}) {
   return useQuery({
     queryKey: ["orders", status],
     queryFn: async () => {
-      const query = supabase
-        .from("Sales_Orders")
-        .select(
-          `
+      let query = supabase.from("Sales_Orders").select(
+        `
           id,
           status,
           Customers!inner (
@@ -20,8 +18,10 @@ export function useOrders({ status = "pending" }: useOrderOption = {}) {
             profiles!inner (*)
           )
           `,
-        )
-        .eq("status", status);
+      );
+      if (status) {
+        query = query.eq("status", status);
+      }
 
       const { data, error } = await query;
 
@@ -37,7 +37,9 @@ export function useOrderItems({ id }: { id: number }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("Sales_Order_Items")
-        .select()
+        .select(
+          `*,Product_Stock (*, Products(*), Bottle_Sizes(*)), Order_Item_Batches(*, Stock_Batches(*))`,
+        )
         .eq("sales_order_id", id);
 
       if (error) throw error;
@@ -85,6 +87,69 @@ export function useAddOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+}
+
+type cancelOrderType = {
+  orderItemsIds: number[];
+  orderId: number;
+};
+
+export function useCancelOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ orderItemsIds, orderId }: cancelOrderType) => {
+      const { error: orderItemsError } = await supabase
+        .from("Sales_Order_Items")
+        .delete()
+        .in("id", orderItemsIds);
+
+      if (orderItemsError) throw orderItemsError;
+
+      const { error: orderError } = await supabase
+        .from("Sales_Orders")
+        .delete()
+        .eq("id", orderId);
+
+      if (orderError) throw orderError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+}
+
+type compeleteOrderType = {
+  sales_order_item_id: number;
+  stock_batch_id: number;
+  quantity: number;
+}[];
+
+export function useCompeleteOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      orderBatches,
+      salesOrderId,
+    }: {
+      orderBatches: compeleteOrderType;
+      salesOrderId: number;
+    }) => {
+      console.log(orderBatches);
+      const { error } = await supabase.rpc("process_order_batches", {
+        p_sales_order_id: salesOrderId,
+        p_items: orderBatches,
+      });
+
+      if (error) {
+        console.error("Order processing failed:", error.message);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["orders", "stock", "stock-batches"],
+      });
     },
   });
 }

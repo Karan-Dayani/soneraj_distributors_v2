@@ -38,7 +38,7 @@ export function useStock() {
             quantity,
             created_at
           )
-        `
+        `,
         )
         .neq("quantity", 0)
         // Order batches by newest first
@@ -47,6 +47,23 @@ export function useStock() {
           ascending: false,
         })
         .order("quantity", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useStockBatches({ stockId }: { stockId?: number }) {
+  return useQuery({
+    queryKey: ["stock-batches", stockId],
+    queryFn: async () => {
+      let query = supabase.from("Stock_Batches").select("*");
+
+      if (stockId) {
+        query = query.eq("product_stock_id", stockId);
+      }
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
@@ -116,7 +133,7 @@ export function useRemoveStock() {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stock"] });
+      queryClient.invalidateQueries({ queryKey: ["stock", "stock-batches"] });
     },
   });
 }
@@ -161,7 +178,7 @@ export function useUpdateStock() {
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stock"] });
+      queryClient.invalidateQueries({ queryKey: ["stock", "stock-batches"] });
     },
   });
 }

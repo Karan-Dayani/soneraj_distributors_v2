@@ -177,50 +177,56 @@ export default function Purchase() {
       </div>
 
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-        {productVariants?.map((variant) => {
-          return (
-            <div
-              key={variant.id}
-              className="
+        {productVariants
+          ?.sort((a, b) => {
+            const quantityA = parseInt(a.Bottle_Sizes?.size_ml as string, 10);
+            const quantityB = parseInt(b.Bottle_Sizes?.size_ml as string, 10);
+            return quantityB - quantityA;
+          })
+          .map((variant) => {
+            return (
+              <div
+                key={variant.id}
+                className="
               group relative overflow-hidden transition-all duration-200
               bg-white border border-alabaster-grey rounded-xl shadow-sm
               hover:border-pale-slate hover:shadow-md
               flex flex-row items-center justify-between p-4 gap-4
               sm:block sm:p-0
             "
-            >
-              {/* --- Section 1: Info (Size & Stock) --- */}
-              <div className="flex flex-col sm:bg-bright-snow sm:border-b sm:border-platinum sm:px-5 sm:py-4 sm:flex-row sm:justify-between sm:items-start">
-                <div className="flex flex-col">
-                  <span className="hidden sm:block text-[10px] font-bold text-slate-grey uppercase tracking-wider mb-1">
-                    Size
-                  </span>
-                  <span className="text-lg sm:text-2xl font-bold text-gunmetal">
-                    {variant.Bottle_Sizes?.size_ml}
-                  </span>
+              >
+                {/* --- Section 1: Info (Size & Stock) --- */}
+                <div className="flex flex-col sm:bg-bright-snow sm:border-b sm:border-platinum sm:px-5 sm:py-4 sm:flex-row sm:justify-between sm:items-start">
+                  <div className="flex flex-col">
+                    <span className="hidden sm:block text-[10px] font-bold text-slate-grey uppercase tracking-wider mb-1">
+                      Size
+                    </span>
+                    <span className="text-lg sm:text-2xl font-bold text-gunmetal">
+                      {variant.Bottle_Sizes?.size_ml}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* --- Container for Quantity & Batch --- */}
-              <div className="flex flex-row w-full items-start justify-end gap-2 sm:gap-0">
-                {/* Input 1: Quantity */}
-                <div className="w-24 sm:w-full sm:p-5">
-                  <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
-                    Quantity
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={inputValues[variant.id]?.quantity || ""}
-                      onChange={(e) => {
-                        handleInputChange(
-                          variant.id,
-                          "quantity",
-                          Number(e.target.value),
-                        );
-                      }}
-                      className="
+                {/* --- Container for Quantity & Batch --- */}
+                <div className="flex flex-row w-full items-start justify-end gap-2 sm:gap-0">
+                  {/* Input 1: Quantity */}
+                  <div className="w-24 sm:w-full sm:p-5">
+                    <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
+                      Quantity
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="Qty"
+                        value={inputValues[variant.id]?.quantity || ""}
+                        onChange={(e) => {
+                          handleInputChange(
+                            variant.id,
+                            "quantity",
+                            Number(e.target.value),
+                          );
+                        }}
+                        className="
                       w-full rounded-lg text-center sm:text-left
                       bg-bright-snow border border-pale-slate
                       text-gunmetal font-bold
@@ -235,28 +241,28 @@ export default function Purchase() {
                       focus:outline-none focus:ring-2 focus:ring-gunmetal focus:bg-white focus:border-transparent
                       transition-all
                     "
-                    />
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* Input 2: Batch */}
-                <div className="w-24 sm:w-full sm:p-5">
-                  <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
-                    Batch
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="numeric"
-                      placeholder="Batch"
-                      value={inputValues[variant.id]?.batch_code || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          variant.id,
-                          "batch_code",
-                          e.target.value.toUpperCase(),
-                        )
-                      }
-                      className="
+                  {/* Input 2: Batch */}
+                  <div className="w-24 sm:w-full sm:p-5">
+                    <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
+                      Batch
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="numeric"
+                        placeholder="Batch"
+                        value={inputValues[variant.id]?.batch_code || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            variant.id,
+                            "batch_code",
+                            e.target.value.toUpperCase(),
+                          )
+                        }
+                        className="
                       w-full rounded-lg text-center sm:text-left
                       bg-bright-snow border border-pale-slate
                       text-gunmetal font-bold
@@ -271,13 +277,13 @@ export default function Purchase() {
                       focus:outline-none focus:ring-2 focus:ring-gunmetal focus:bg-white focus:border-transparent
                       transition-all
                     "
-                    />
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
 
       {selectedProductId && (
