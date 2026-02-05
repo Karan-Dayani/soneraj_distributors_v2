@@ -1,7 +1,6 @@
 import { Box, Hash, Layers } from "lucide-react";
 
 export default function CompletedOrderCard({ item }: any) {
-  console.log(item);
   return (
     <div
       className={`bg-white border border-alabaster-grey rounded-xl shadow-sm transition-all`}

@@ -114,19 +114,40 @@ export function useCompeleteOrder() {
       orderBatches: compeleteOrderType;
       salesOrderId: number;
     }) => {
-      console.log(orderBatches);
       const { error } = await supabase.rpc("process_order_batches", {
         p_sales_order_id: salesOrderId,
         p_items: orderBatches,
       });
 
-      if (error) {
-        console.error("Order processing failed:", error.message);
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["orders", "stock", "stock-batches"],
+        queryKey: ["orders"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["stock"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["stock-batches"],
+      });
+    },
+  });
+}
+
+export function useRemoveCompletedOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ orderId }: { orderId: number }) => {
+      const { error } = await supabase.rpc("delete_completed_order", {
+        p_order_id: orderId,
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["orders"],
       });
     },
   });

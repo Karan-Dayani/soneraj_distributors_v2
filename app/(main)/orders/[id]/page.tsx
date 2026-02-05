@@ -6,6 +6,7 @@ import {
   useCompeleteOrder,
   useOrderItems,
   useOrders,
+  useRemoveCompletedOrder,
 } from "@/app/utils/hooks/useOrders";
 import { useParams, useRouter } from "next/navigation";
 import OrderCard from "./OrderCard";
@@ -54,8 +55,9 @@ export default function OrderDetails() {
   }, []);
 
   const { mutate: compeleteOrder } = useCompeleteOrder();
-
-  console.log(data);
+  const [removeCompletedOrderAlert, setRemoveCompletedOrderAlert] =
+    useState<boolean>(false);
+  const { mutate: removeCompletedOrder } = useRemoveCompletedOrder();
 
   const handleSubmit = () => {
     compeleteOrder(
@@ -167,6 +169,29 @@ export default function OrderDetails() {
               </button>
             </div>
           )}
+          {currOrder?.status === "completed" && (
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <button
+                onClick={() => {
+                  setRemoveCompletedOrderAlert(true);
+                }}
+                className="
+                          group flex-1 w-full sm:w-auto min-w-[140px] py-3.5 px-4
+                          bg-red-50 text-red-600 border border-red-100 rounded-xl
+                          font-bold text-sm uppercase tracking-wide
+                          hover:bg-red-100 hover:border-red-200 hover:text-red-700
+                          active:scale-[0.98] transition-all duration-200
+                          flex items-center justify-center gap-2 cursor-pointer
+                        "
+              >
+                Remove
+                <X
+                  size={20}
+                  className="opacity-70 group-hover:opacity-100 transition-opacity"
+                />
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <CustomAlert
@@ -193,6 +218,31 @@ export default function OrderDetails() {
         }}
         title="Cancel Order"
         message={`Do you want to cancel order from ${currOrder?.Customers.name} ?`}
+        type="warning"
+      />
+      <CustomAlert
+        isOpen={removeCompletedOrderAlert}
+        onClose={() => setRemoveCompletedOrderAlert(false)}
+        onConfirm={() => {
+          removeCompletedOrder(
+            {
+              orderId: Number(id),
+            },
+            {
+              onSuccess: () => {
+                addToast("Order Removed Successful!", "success");
+                router.replace("/orders");
+              },
+              onError: (error) => {
+                console.error(error);
+                addToast("Failed to remove order. Check console.", "error");
+              },
+            },
+          );
+          setCancelOrderAlert(false);
+        }}
+        title="Remove Order"
+        message={`Do you want to cancel order from ${currOrder?.Customers.name} from history ?`}
         type="warning"
       />
     </>
