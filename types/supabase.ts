@@ -333,9 +333,39 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_sales_order: {
+        Args: {
+          p_customer_id: number;
+          p_items: Json;
+          p_status: Database["public"]["Enums"]["order_status"];
+        };
+        Returns: number;
+      };
+      cancel_sales_order: {
+        Args: { p_order_id: number; p_order_item_ids: number[] };
+        Returns: undefined;
+      };
+      delete_stock_batch: {
+        Args: { p_batch_id: number; p_stock_update: Json };
+        Returns: undefined;
+      };
       get_email_from_username: { Args: { p_username: string }; Returns: Json };
       process_order_batches: {
         Args: { p_items: Json; p_sales_order_id: number };
+        Returns: undefined;
+      };
+      purchase_stock: {
+        Args: { p_batches: Json; p_stock_updates: Json };
+        Returns: undefined;
+      };
+      update_stock_batch: {
+        Args: {
+          p_batch_id: number;
+          p_new_batch_code: string;
+          p_new_batch_qty: number;
+          p_new_total_stock_qty: number;
+          p_stock_id: number;
+        };
         Returns: undefined;
       };
     };

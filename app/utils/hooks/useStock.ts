@@ -79,27 +79,17 @@ export function usePurchaseStock() {
       stockToUpdate,
       batchesToInsert,
     }: PurchaseVariables) => {
-      // 1. UPDATE EXISTING STOCK (Bulk Upsert)
-      // We use upsert because it can handle an array of updates in one network request.
-      const { error: stockError } = await supabase
-        .from("Product_Stock")
-        .upsert(stockToUpdate);
-      // .upsert works because you provided the 'id' (Primary Key)
+      const { error } = await supabase.rpc("purchase_stock", {
+        p_stock_updates: stockToUpdate,
+        p_batches: batchesToInsert,
+      });
 
-      if (stockError) throw stockError;
-
-      // 2. INSERT BATCH HISTORY
-      const { error: batchError } = await supabase
-        .from("Stock_Batches")
-        .insert(batchesToInsert);
-
-      if (batchError) throw batchError;
-
-      return true;
+      if (error) throw error;
     },
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
+      queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
     },
   });
 }
@@ -116,24 +106,17 @@ export function useRemoveStock() {
       stockToUpdate,
       batchIdToDelete,
     }: DeleteBatchVariables) => {
-      const { error: updateError } = await supabase
-        .from("Product_Stock")
-        .upsert(stockToUpdate);
+      const { error } = await supabase.rpc("delete_stock_batch", {
+        p_stock_update: stockToUpdate,
+        p_batch_id: batchIdToDelete,
+      });
 
-      if (updateError) throw updateError;
-
-      const { error: deleteError } = await supabase
-        .from("Stock_Batches")
-        .delete()
-        .eq("id", batchIdToDelete);
-
-      if (deleteError) throw deleteError;
-
-      return true;
+      if (error) throw error;
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stock", "stock-batches"] });
+      queryClient.invalidateQueries({ queryKey: ["stock"] });
+      queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
     },
   });
 }
@@ -157,28 +140,20 @@ export function useUpdateStock() {
       newBatchQty,
       newTotalStockQty,
     }: UpdateBatchVariables) => {
-      const { error: stockError } = await supabase
-        .from("Product_Stock")
-        .update({ quantity: newTotalStockQty })
-        .eq("id", stockId);
+      const { error } = await supabase.rpc("update_stock_batch", {
+        p_stock_id: stockId,
+        p_batch_id: batchId,
+        p_new_batch_code: newBatchCode,
+        p_new_batch_qty: newBatchQty,
+        p_new_total_stock_qty: newTotalStockQty,
+      });
 
-      if (stockError) throw stockError;
-
-      const { error: batchError } = await supabase
-        .from("Stock_Batches")
-        .update({
-          batch_code: newBatchCode,
-          quantity: newBatchQty,
-        })
-        .eq("id", batchId);
-
-      if (batchError) throw batchError;
-
-      return true;
+      if (error) throw error;
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stock", "stock-batches"] });
+      queryClient.invalidateQueries({ queryKey: ["stock"] });
+      queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
     },
   });
 }

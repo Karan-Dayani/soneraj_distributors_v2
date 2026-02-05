@@ -49,7 +49,7 @@ export function useOrderItems({ id }: { id: number }) {
 }
 
 export type AddOrderType = {
-  Sales_Order: { customerid: number; status: string };
+  Sales_Order: { customerid: number; status: "pending" | "completed" };
   Sales_Order_Items: {
     productStockid: number;
     qty: number;
@@ -59,31 +59,16 @@ export function useAddOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ Sales_Order, Sales_Order_Items }: AddOrderType) => {
-      const { data: salesOrderData, error: salesOrderError } = await supabase
-        .from("Sales_Orders")
-        .insert([
-          {
-            customer_id: Sales_Order.customerid,
-            status: Sales_Order.status as "pending" | "completed",
-          },
-        ])
-        .select()
-        .single();
+      const { data: orderId, error } = await supabase.rpc("add_sales_order", {
+        p_customer_id: Sales_Order.customerid,
+        p_status: Sales_Order.status,
+        p_items: Sales_Order_Items.map((item) => ({
+          product_stock_id: item.productStockid,
+          quantity: item.qty,
+        })),
+      });
 
-      if (salesOrderError) throw salesOrderError;
-      if (!salesOrderData) throw new Error("Failed to create order");
-
-      const itemsToInsert = Sales_Order_Items.map((item) => ({
-        sales_order_id: salesOrderData.id,
-        product_stock_id: item.productStockid,
-        "quantity-ordered": item.qty,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("Sales_Order_Items")
-        .insert(itemsToInsert);
-
-      if (itemsError) throw itemsError;
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -100,19 +85,12 @@ export function useCancelOrder() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ orderItemsIds, orderId }: cancelOrderType) => {
-      const { error: orderItemsError } = await supabase
-        .from("Sales_Order_Items")
-        .delete()
-        .in("id", orderItemsIds);
+      const { error } = await supabase.rpc("cancel_sales_order", {
+        p_order_id: orderId,
+        p_order_item_ids: orderItemsIds,
+      });
 
-      if (orderItemsError) throw orderItemsError;
-
-      const { error: orderError } = await supabase
-        .from("Sales_Orders")
-        .delete()
-        .eq("id", orderId);
-
-      if (orderError) throw orderError;
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
