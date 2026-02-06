@@ -72,7 +72,10 @@ export default function OrderDetails() {
         },
         onError: (error) => {
           console.error(error);
-          addToast("Failed to complete order. Check console.", "error");
+          addToast(
+            error?.message || "Failed to complete order. Check console.",
+            "error",
+          );
         },
       },
     );

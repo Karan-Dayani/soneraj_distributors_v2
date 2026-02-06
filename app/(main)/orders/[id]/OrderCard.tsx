@@ -20,9 +20,9 @@ export default function OrderCard({ item, add }: any) {
   });
 
   // 1. Initialize state with an array of objects to track multiple batch rows
-  const [rows, setRows] = useState(() => [
-    { id: Date.now(), qty: "", batch_id: "" },
-  ]);
+  const [rows, setRows] = useState<
+    { id: number; qty: number; batch_id: number | null }[]
+  >(() => [{ id: Date.now(), qty: 0, batch_id: null }]);
 
   // 2. Calculation Logic for Validation
   const totalOrdered = item["quantity-ordered"] || 0;
@@ -32,13 +32,47 @@ export default function OrderCard({ item, add }: any) {
     0,
   );
 
+  const getBatchRemaining = (batchId: number | null) => {
+    if (!batchId) return 0;
+    const batch = BatchData?.find((b: any) => b.id === batchId);
+    return batch?.quantity ?? 0;
+  };
+
+  const getAllocatedForBatch = (
+    batchId: number | null,
+    currentRowId: number,
+  ) => {
+    if (!batchId) return 0;
+
+    return rows.reduce((sum, r) => {
+      if (r.batch_id === batchId && r.id !== currentRowId) {
+        return sum + (r.qty || 0);
+      }
+      return sum;
+    }, 0);
+  };
+
+  const clampQtyToBatch = (
+    qty: number,
+    batchId: number | null,
+    rowId: number,
+  ) => {
+    if (!batchId) return qty;
+
+    const batchRemaining = getBatchRemaining(batchId);
+    const alreadyUsed = getAllocatedForBatch(batchId, rowId);
+
+    const maxAllowed = batchRemaining - alreadyUsed;
+    return Math.max(0, Math.min(qty, maxAllowed));
+  };
+
   const isPerfectMatch = totalAllocated === totalOrdered;
   const isOverAllocated = totalAllocated > totalOrdered;
   const isLowStock = item.Product_Stock?.quantity < totalOrdered;
 
   // 3. Row Management Functions
   const addRow = () => {
-    setRows([...rows, { id: Date.now(), qty: "", batch_id: "" }]);
+    setRows([...rows, { id: Date.now(), qty: 0, batch_id: null }]);
   };
 
   const removeRow = (id: number) => {
@@ -47,32 +81,58 @@ export default function OrderCard({ item, add }: any) {
     }
   };
 
-  const updateRow = (id: number, field: string, value: number | string) => {
-    setRows(
-      rows.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+  const updateRow = (
+    id: number,
+    field: "qty" | "batch_id",
+    value: number | null,
+  ) => {
+    setRows((prev) =>
+      prev.map((row) => {
+        if (row.id !== id) return row;
+
+        const newRow = { ...row, [field]: value };
+
+        // validate qty AFTER any change
+        const clamped = clampQtyToBatch(newRow.qty, newRow.batch_id, id);
+
+        newRow.qty = clamped;
+
+        return newRow;
+      }),
     );
   };
 
   // 4. Submission Handler
   const handleConfirm = () => {
+    // filter valid rows
+    const validRows = rows.filter((r) => Number(r.qty) > 0 && r.batch_id);
+
+    if (validRows.length === 0) {
+      addToast("Select batch and quantity first", "error");
+      return;
+    }
+
+    if (totalAllocated !== totalOrdered) {
+      addToast(
+        `Allocated ${totalAllocated} but order requires ${totalOrdered}`,
+        "error",
+      );
+      return;
+    }
+
     try {
-      const payload = {
-        order_item_id: item.id,
-        product_id: item.Product_Stock?.product_id,
-        allocations: rows.filter((r) => r.qty && r.batch_id),
-      };
-      if (payload.allocations.length >= 1) {
-        const data = payload.allocations.map((item) => ({
-          sales_order_item_id: payload.order_item_id,
-          stock_batch_id: item.batch_id,
-          quantity: item.qty,
-        }));
-        add(data);
-      }
-    } catch {
-      addToast("Failed to allocate batches! Please Reload.", "error");
-    } finally {
+      const data = validRows.map((r) => ({
+        sales_order_item_id: item.id,
+        stock_batch_id: r.batch_id,
+        quantity: r.qty,
+      }));
+
+      add(data);
+
+      // only lock UI after sending
       setSubmitted(true);
+    } catch {
+      addToast("Failed to allocate batches! Please reset.", "error");
     }
   };
 
@@ -174,7 +234,7 @@ export default function OrderCard({ item, add }: any) {
                   <div className="w-20 md:w-80 shrink-0">
                     <input
                       type="number"
-                      value={row.qty}
+                      value={row.qty || ""}
                       onChange={(e) =>
                         updateRow(row.id, "qty", Number(e.target.value))
                       }
@@ -193,7 +253,7 @@ export default function OrderCard({ item, add }: any) {
                       options={BatchData || []}
                       selectedId={row.batch_id}
                       onSelect={(val) => updateRow(row.id, "batch_id", val.id)}
-                      onClear={() => updateRow(row.id, "batch_id", "")}
+                      onClear={() => updateRow(row.id, "batch_id", null)}
                       displayKey="batch_code"
                       idKey="id"
                       placeholder="Batch"
