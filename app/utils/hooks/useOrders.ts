@@ -72,6 +72,7 @@ export function useAddOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["shortage"] });
     },
   });
 }
@@ -94,6 +95,7 @@ export function useCancelOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["shortage"] });
     },
   });
 }
@@ -130,6 +132,9 @@ export function useCompeleteOrder() {
       });
       queryClient.invalidateQueries({
         queryKey: ["stock-batches"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["shortage"],
       });
     },
   });

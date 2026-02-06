@@ -71,6 +71,17 @@ export function useStockBatches({ stockId }: { stockId?: number }) {
   });
 }
 
+export function useShortage() {
+  return useQuery({
+    queryKey: ["shortage"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_stock_shortage");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function usePurchaseStock() {
   const queryClient = useQueryClient();
 
@@ -90,6 +101,7 @@ export function usePurchaseStock() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
+      queryClient.invalidateQueries({ queryKey: ["shortage"] });
     },
   });
 }
@@ -117,6 +129,7 @@ export function useRemoveStock() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
+      queryClient.invalidateQueries({ queryKey: ["shortage"] });
     },
   });
 }
@@ -154,6 +167,7 @@ export function useUpdateStock() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
+      queryClient.invalidateQueries({ queryKey: ["shortage"] });
     },
   });
 }

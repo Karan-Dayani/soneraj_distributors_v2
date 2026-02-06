@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import {
+  DiamondMinus,
   DiamondPlus,
   Home,
   Layers,
@@ -24,6 +25,7 @@ const menuItems = [
   { name: "Purchase", icon: <DiamondPlus size={20} />, route: "/purchase" },
   { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
   { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
+  { name: "Shortage", icon: <DiamondMinus size={20} />, route: "/shortage" },
 ];
 
 export default function Header() {
