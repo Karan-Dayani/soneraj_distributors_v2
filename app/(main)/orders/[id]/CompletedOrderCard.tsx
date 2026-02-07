@@ -20,7 +20,7 @@ export default function CompletedOrderCard({ item }: any) {
             <p className="text-[10px] font-bold uppercase text-slate-grey mb-0.5">
               Size
             </p>
-            <p className="text-iron-grey text-sm font-medium">
+            <p className="text-iron-grey font-bold text-sm">
               {item.Product_Stock?.Bottle_Sizes?.size_ml}ml
             </p>
           </div>
@@ -64,44 +64,33 @@ export default function CompletedOrderCard({ item }: any) {
           </div>
 
           {/* Content Section */}
-          <div className="p-5">
-            {/* Column Headers */}
-            <div className="flex gap-4 mb-2 px-3">
-              <div className="w-16 text-center text-[10px] font-bold text-pale-slate-2 uppercase tracking-widest">
-                Qty
-              </div>
-              <div className="grow text-[10px] font-bold text-pale-slate-2 uppercase tracking-widest pl-1">
-                Batch Code
-              </div>
-            </div>
-
-            {/* Batches List - Clean Read-Only Rows */}
-            <div className="flex flex-col border border-platinum rounded-lg overflow-hidden divide-y divide-platinum">
-              {item.Order_Item_Batches.map((row: any) => (
-                <div
-                  key={row.id}
-                  className="flex gap-4 items-center px-3 py-3 bg-white hover:bg-bright-snow transition-colors group"
-                >
-                  {/* Quantity (Plain Text) */}
-                  <div className="w-16 shrink-0 text-center">
-                    <span className="font-mono font-bold text-sm text-gunmetal">
-                      {row.quantity}
-                    </span>
-                  </div>
-
-                  {/* Batch Code (Plain Text with Icon) */}
-                  <div className="grow min-w-0 flex items-center gap-3">
-                    <Hash
-                      size={14}
-                      className="text-pale-slate-2 group-hover:text-gunmetal transition-colors"
-                    />
-                    <span className="text-sm font-medium text-iron-grey font-mono truncate group-hover:text-gunmetal transition-colors">
-                      {row.Stock_Batches.batch_code}
-                    </span>
-                  </div>
+          <div className="divide-y divide-platinum">
+            {item.Order_Item_Batches.map((row: any) => (
+              <div
+                key={row.id}
+                className="flex items-center px-4 py-2.5 hover:bg-bright-snow transition-colors group cursor-default"
+              >
+                {/* Batch Code */}
+                <div className="flex items-center gap-2 text-gunmetal font-medium font-mono text-sm">
+                  <Hash
+                    size={14}
+                    className="text-pale-slate-2 group-hover:text-slate-grey transition-colors shrink-0"
+                  />
+                  {row.Stock_Batches.batch_code}
                 </div>
-              ))}
-            </div>
+
+                {/* Dotted Connector - Solves visual separation on wide cards */}
+                <div className="grow mx-3 border-b-2 border-dotted border-platinum relative -top-0.5"></div>
+
+                {/* Quantity */}
+                <div className="flex items-center gap-1.5 text-sm font-bold text-iron-grey font-mono">
+                  {row.quantity}
+                  <span className="text-[10px] font-normal text-pale-slate-2 font-sans">
+                    qty
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

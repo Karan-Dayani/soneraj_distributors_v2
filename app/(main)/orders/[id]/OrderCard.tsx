@@ -167,7 +167,7 @@ export default function OrderCard({ item, add }: any) {
             <p className="text-[10px] font-bold uppercase text-slate-grey mb-0.5">
               Size
             </p>
-            <p className="text-iron-grey text-sm font-medium">
+            <p className="text-iron-grey text-sm font-bold">
               {item.Product_Stock?.Bottle_Sizes?.size_ml}ml
             </p>
           </div>
@@ -230,6 +230,19 @@ export default function OrderCard({ item, add }: any) {
                 style={{ zIndex: rows.length - i }}
               >
                 <div className="flex gap-2 grow items-center">
+                  {/* Batch Select Component */}
+                  <div className="grow min-w-0">
+                    <SimpleSelect
+                      options={BatchData || []}
+                      selectedId={row.batch_id}
+                      onSelect={(val) => updateRow(row.id, "batch_id", val.id)}
+                      onClear={() => updateRow(row.id, "batch_id", null)}
+                      displayKey="batch_code,quantity"
+                      idKey="id"
+                      placeholder="Batch"
+                    />
+                  </div>
+
                   {/* Qty Input - Turns red on over-allocation */}
                   <div className="w-20 md:w-80 shrink-0">
                     <input
@@ -244,19 +257,6 @@ export default function OrderCard({ item, add }: any) {
                           : "border-alabaster-grey focus:border-gunmetal"
                       }`}
                       placeholder="Qty"
-                    />
-                  </div>
-
-                  {/* Batch Select Component */}
-                  <div className="grow min-w-0">
-                    <SimpleSelect
-                      options={BatchData || []}
-                      selectedId={row.batch_id}
-                      onSelect={(val) => updateRow(row.id, "batch_id", val.id)}
-                      onClear={() => updateRow(row.id, "batch_id", null)}
-                      displayKey="batch_code"
-                      idKey="id"
-                      placeholder="Batch"
                     />
                   </div>
                 </div>

@@ -189,7 +189,7 @@ export default function Retailers() {
 
                     createCustomer(retailerFormData, {
                       onSuccess: () => {
-                        addToast("Order Successful!", "success");
+                        addToast("Retailer added Successfully!", "success");
                         // Clear your inputs here
                         setRetailerFormData(initialRetailerData);
                       },

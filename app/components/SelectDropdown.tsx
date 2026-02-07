@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronDown, Check, X } from "lucide-react";
 
 // --- GENERIC PROPS INTERFACE ---
@@ -9,7 +9,7 @@ export interface SimpleSelectProps<T> {
   onSelect: (item: T) => void;
   onClear: () => void;
   /** Which property of the object to display (e.g., 'name', 'title') */
-  displayKey: keyof T;
+  displayKey: string;
   /** Unique ID key (e.g., 'id') for React keys and comparison */
   idKey: keyof T;
   /** Label for the input */
@@ -35,6 +35,22 @@ export default function SimpleSelect<T extends Record<string, any>>({
 }: SimpleSelectProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const getDisplayLabel = useCallback(
+    (item: T | null): string => {
+      if (!item) return "";
+
+      if (displayKey.includes(",")) {
+        return displayKey
+          .split(",")
+          .map((key) => item[key.trim()])
+          .filter(Boolean)
+          .join(" - ");
+      }
+      return item[displayKey];
+    },
+    [displayKey],
+  );
 
   // Derive selected item from props if selectedId is provided
   const selectedItem = selectedId
@@ -115,33 +131,35 @@ export default function SimpleSelect<T extends Record<string, any>>({
           `}
         >
           {selectedItem ? (
-            <span className="text-gunmetal">{selectedItem[displayKey]}</span>
+            <span className="text-gunmetal">
+              {getDisplayLabel(selectedItem)}
+            </span>
           ) : (
             <span className="text-pale-slate-2">{placeholder}</span>
           )}
-        </button>
 
-        {/* Right Chevron */}
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {selectedId && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent dropdown from opening when clearing
-                handleClear();
-              }}
-              className="text-pale-slate-2 hover:text-gunmetal transition-colors"
-            >
-              <X size={14} />
-            </button>
-          )}
-          <ChevronDown
-            size={16}
-            className={`text-pale-slate-2 transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
-            }`}
-          />
-        </div>
+          {/* Right Chevron */}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            {selectedId && (
+              <div
+                // type="button"
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent dropdown from opening when clearing
+                  handleClear();
+                }}
+                className="text-pale-slate-2 hover:text-gunmetal transition-colors"
+              >
+                <X size={14} />
+              </div>
+            )}
+            <ChevronDown
+              size={16}
+              className={`text-pale-slate-2 transition-transform duration-200 ${
+                isOpen ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+        </button>
 
         {/* Dropdown Menu */}
         {isOpen && (
@@ -171,7 +189,7 @@ export default function SimpleSelect<T extends Record<string, any>>({
                           isSelected ? "text-gunmetal" : "text-iron-grey"
                         } group-hover:text-gunmetal`}
                       >
-                        {item[displayKey]}
+                        {getDisplayLabel(item)}
                       </span>
 
                       {isSelected && (
