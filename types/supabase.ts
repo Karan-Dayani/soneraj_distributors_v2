@@ -353,6 +353,20 @@ export type Database = {
         Args: { p_batch_id: number; p_stock_update: Json };
         Returns: undefined;
       };
+      get_dispatch_pdf_rows: {
+        Args: { p_order_ids: number[] };
+        Returns: {
+          batch_code: string;
+          customer_name: string;
+          order_id: number;
+          order_status: string;
+          product_name: string;
+          product_short_name: string;
+          qty: number;
+          size_ml: string;
+          weight_kg: number;
+        }[];
+      };
       get_email_from_username: { Args: { p_username: string }; Returns: Json };
       get_stock_shortage: {
         Args: never;

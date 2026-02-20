@@ -2,7 +2,8 @@
 import CustomModal from "@/app/components/CustomModal";
 import Error from "@/app/components/Error";
 import Loader from "@/app/components/Loader";
-import { useOrders } from "@/app/utils/hooks/useOrders";
+import { createDispatchPDF } from "@/app/components/PDFs/DispatchPDF";
+import { useDispatch, useOrders } from "@/app/utils/hooks/useOrders";
 import {
   ArrowDownToLine,
   CheckCircle2,
@@ -10,7 +11,7 @@ import {
   ListFilter,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react"; // 👈 Changed: Imported useMemo
+import { useMemo, useState } from "react";
 
 export default function Orders() {
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
@@ -22,6 +23,17 @@ export default function Orders() {
     error,
     isLoading,
   } = useOrders({ status: selectedStatus });
+
+  const { data: DATA, error: dispatchError } = useDispatch({
+    ids: selectedOrders,
+  });
+  const safeRows = DATA ?? [];
+
+  const [dispatchModal, setDispatchModal] = useState<boolean>(false);
+  const [dispatchInfo, setDispatchInfo] = useState<{
+    title: string;
+    name: string;
+  }>({ title: "", name: "" });
 
   // 👇 1. CHANGED: Store the 'committed' filters here when user clicks Apply
   const initialFilterData = {
@@ -106,6 +118,15 @@ export default function Orders() {
     );
   };
 
+  const handleDownload = async (info: { title: string; name: string }) => {
+    // if (!dispatchRef.current) return;
+    // await exportDispatchPdf(
+    //   dispatchRef.current,
+    //   `dispatch-${selectedOrders.join("-")}.pdf`,
+    // );
+    createDispatchPDF(safeRows, info);
+  };
+
   return (
     <>
       <div className="p-6 md:p-8 max-w-6xl mx-auto">
@@ -117,7 +138,10 @@ export default function Orders() {
           <div className="order-3 w-full md:w-auto md:order-2 flex justify-center">
             <div className="p-1 flex bg-white rounded-xl border border-alabaster-grey">
               <div
-                onClick={() => setSelectedStatus("pending")}
+                onClick={() => {
+                  setSelectedStatus("pending");
+                  setSelectedOrders([]);
+                }}
                 className={`w-32 text-center p-2 rounded-l-lg cursor-pointer ${
                   selectedStatus === "pending" && "bg-platinum"
                 } transition-all duration-500`}
@@ -126,7 +150,10 @@ export default function Orders() {
               </div>
               <div className="w-px bg-alabaster-grey" />
               <div
-                onClick={() => setSelectedStatus("completed")}
+                onClick={() => {
+                  setSelectedStatus("completed");
+                  setSelectedOrders([]);
+                }}
                 className={`w-32 text-center p-2 rounded-r-lg cursor-pointer ${
                   selectedStatus === "completed" && "bg-platinum"
                 } transition-all duration-500`}
@@ -148,6 +175,7 @@ export default function Orders() {
             <div>
               <button
                 disabled={selectedOrders.length < 1}
+                onClick={() => setDispatchModal(true)}
                 className="p-3 bg-white hover:bg-bright-snow rounded-xl border border-alabaster-grey cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-colors"
               >
                 <ArrowDownToLine className="" />
@@ -173,7 +201,9 @@ export default function Orders() {
               return (
                 <Link
                   key={order.id}
-                  href={`/orders/${order.id}`}
+                  href={
+                    selectedOrders.length >= 1 ? "#" : `/orders/${order.id}`
+                  }
                   className={`
                             group relative flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all duration-200
                             bg-white h-full shadow-sm
@@ -298,6 +328,67 @@ export default function Orders() {
               Apply Filters
             </button>
           </div>
+        </div>
+      </CustomModal>
+      <CustomModal
+        isOpen={dispatchModal}
+        onClose={() => {
+          setDispatchModal(false);
+          setDispatchInfo({ title: "", name: "" });
+        }}
+        title="Dispatch PDF Info"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="w-full">
+            <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+              Title
+              <div className="mt-2">
+                <input
+                  type="text"
+                  name="title"
+                  value={dispatchInfo.title || ""}
+                  onChange={(e) =>
+                    setDispatchInfo((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  placeholder="Title for the PDF"
+                  className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                />
+              </div>
+            </label>
+          </div>
+          <div className="w-full">
+            <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+              Name
+              <div className="mt-2">
+                <input
+                  type="text"
+                  name="name"
+                  value={dispatchInfo.name || ""}
+                  onChange={(e) =>
+                    setDispatchInfo((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
+                  placeholder="Name of the PDF"
+                  className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                />
+              </div>
+            </label>
+          </div>
+          <button
+            onClick={() => {
+              handleDownload(dispatchInfo);
+              setDispatchModal(false);
+              setDispatchInfo({ title: "", name: "" });
+            }}
+            className="basis-1/2 py-3 cursor-pointer bg-gunmetal text-white rounded-xl"
+          >
+            Download
+          </button>
         </div>
       </CustomModal>
     </>

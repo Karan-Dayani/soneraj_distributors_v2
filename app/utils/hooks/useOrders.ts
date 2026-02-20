@@ -48,6 +48,19 @@ export function useOrderItems({ id }: { id: number }) {
   });
 }
 
+export function useDispatch({ ids }: { ids: number[] }) {
+  return useQuery({
+    queryKey: ["dispatch", ids],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_dispatch_pdf_rows", {
+        p_order_ids: ids,
+      });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export type AddOrderType = {
   Sales_Order: { customerid: number; status: "pending" | "completed" };
   Sales_Order_Items: {
