@@ -39,6 +39,7 @@ export default function Orders() {
   const initialFilterData = {
     address: "",
     route_no: "",
+    license_no: "",
     username: "",
   };
 
@@ -76,6 +77,15 @@ export default function Orders() {
         }
       }
 
+      // License No Filter
+      if (appliedFilters.license_no) {
+        // Safe check for route_no (adjust path if needed)
+        const license = String(o.Customers?.license_no || "").toLowerCase();
+        if (!license.includes(appliedFilters.license_no.toLowerCase())) {
+          return false;
+        }
+      }
+
       // Username Filter
       if (appliedFilters.username) {
         if (
@@ -108,6 +118,7 @@ export default function Orders() {
   const clearFilters = () => {
     setFilterFormData(initialFilterData);
     setAppliedFilters(initialFilterData);
+    setFilterModal(false);
   };
 
   const toggleOrders = (item: number) => {
@@ -293,6 +304,21 @@ export default function Orders() {
                   value={filterFormData.route_no || ""}
                   onChange={handleFilterChange}
                   placeholder="Filter by Route No"
+                  className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                />
+              </div>
+            </label>
+          </div>
+          <div className="w-full">
+            <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+              License No.
+              <div className="mt-2">
+                <input
+                  type="text"
+                  name="license_no"
+                  value={filterFormData.license_no || ""}
+                  onChange={handleFilterChange}
+                  placeholder="Filter by License No"
                   className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
                 />
               </div>
