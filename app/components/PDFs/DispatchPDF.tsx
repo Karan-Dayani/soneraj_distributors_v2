@@ -37,13 +37,20 @@ export function buildCustomerTable(rows: OrderRow[]): {
   columns: SizeCell[]; // column meta
   data: CustomerRow[];
 } {
-  // get unique sizes
+  // Helper to get the base size (e.g., "90P" -> "90", "WC ml" -> "WC")
+  const getBaseSize = (size: string) => {
+    const match = size.match(/\d+/);
+    return match ? match[0] : size.replace(" ml", "").trim();
+  };
+
+  // get unique base sizes
   const sizeMap = new Map<string, SizeCell>();
 
   rows.forEach((r) => {
-    if (!sizeMap.has(r.size_ml)) {
-      sizeMap.set(r.size_ml, {
-        size_ml: r.size_ml,
+    const baseSize = getBaseSize(r.size_ml);
+    if (!sizeMap.has(baseSize)) {
+      sizeMap.set(baseSize, {
+        size_ml: baseSize,
         weight_kg: r.weight_kg,
         products: [],
         total_qty: 0,
@@ -51,9 +58,13 @@ export function buildCustomerTable(rows: OrderRow[]): {
     }
   });
 
-  const columns = Array.from(sizeMap.values()).sort(
-    (a, b) => parseInt(a.size_ml) - parseInt(b.size_ml),
-  );
+  const columns = Array.from(sizeMap.values()).sort((a, b) => {
+    const aNum = parseInt(a.size_ml);
+    const bNum = parseInt(b.size_ml);
+    if (isNaN(aNum)) return 1;
+    if (isNaN(bNum)) return -1;
+    return aNum - bNum;
+  });
 
   const customerMap = new Map<string, CustomerRow>();
 
@@ -72,16 +83,23 @@ export function buildCustomerTable(rows: OrderRow[]): {
     }
 
     const customer = customerMap.get(row.customer_name)!;
+    const baseSize = getBaseSize(row.size_ml);
+    const sizeCell = customer.sizes.find((s) => s.size_ml === baseSize)!;
 
-    const sizeCell = customer.sizes.find((s) => s.size_ml === row.size_ml)!;
+    // Append the suffix (P/G) to the product name if it exists and isn't WC
+    const suffix = row.size_ml.replace(/\d+/g, "").replace(" ml", "").trim();
+    const displayProductName =
+      suffix && baseSize !== "WC"
+        ? `${row.product_short_name} (${suffix})`
+        : row.product_short_name;
 
     let product = sizeCell.products.find(
-      (p) => p.product_short_name === row.product_short_name,
+      (p) => p.product_short_name === displayProductName,
     );
 
     if (!product) {
       product = {
-        product_short_name: row.product_short_name,
+        product_short_name: displayProductName,
         batches: [],
         total_qty: 0,
       };
@@ -149,7 +167,6 @@ export const createDispatchPDF = (
     });
 
     const products = Object.values(productMap);
-
     const sizeTotal = products.reduce((acc, p) => acc + p.total_qty, 0);
 
     return {
@@ -161,36 +178,32 @@ export const createDispatchPDF = (
   });
 
   const grandTotalQty = data.reduce((acc, row) => acc + row.total_qty, 0);
-  const grandTotalWeight = data.reduce((acc, row) => {
-    return (
-      acc +
-      row.sizes.reduce(
-        (sAcc, size) => sAcc + size.total_qty * size.weight_kg,
-        0,
-      )
-    );
-  }, 0);
 
-  // Helper to generate the Grid Template string
+  // Adjusted weight calculation to handle mixed weights in one column
+  const grandTotalWeight = rows.reduce(
+    (acc, r) => acc + r.qty * r.weight_kg,
+    0,
+  );
+
   const gridTemplate = `1fr repeat(${columns.length}, 1fr) 80px`;
 
-  // Generate Rows HTML
   const rowsHTML = data
-    .map((row, rowIndex) => {
-      const totalWeight = row.sizes.reduce(
-        (acc, size) => acc + size.total_qty * size.weight_kg,
-        0,
-      );
+    .map((row) => {
+      // Weight calculated per row from the original rows for accuracy
+      const rowWeight = rows
+        .filter((r) => r.customer_name === row.customer_name)
+        .reduce((acc, r) => acc + r.qty * r.weight_kg, 0);
 
       return `
       <div class="grid-row border-b" style="grid-template-columns: ${gridTemplate}">
-        <div class="text-left bold">${row.customer_name}</div>
+        <div class="text-left bold border-right">${row.customer_name}</div>
         ${columns
           .map((col) => {
             const size = row.sizes.find((s) => s.size_ml === col.size_ml);
-            if (!size) return "<div></div>";
+            if (!size || size.products.length === 0)
+              return "<div class='border-right'></div>";
             return `
-            <div class="flex-center flex-wrap gap-5">
+            <div class="flex-center flex-wrap gap-5 border-right">
               ${size.products
                 .map(
                   (prod) => `
@@ -216,7 +229,7 @@ export const createDispatchPDF = (
           .join("")}
         <div class="text-center bold">
           <div>${row.total_qty}</div>
-          <div class="subtext">${totalWeight.toFixed(2)} kg</div>
+          <div class="subtext">${rowWeight.toFixed(2)} kg</div>
         </div>
       </div>
     `;
@@ -226,7 +239,7 @@ export const createDispatchPDF = (
   const totalRowHTML = totalsBySize
     .map((size) => {
       return `
-      <div class="flex-center flex-wrap gap-5">
+      <div class="flex-center flex-wrap gap-5 border-right">
         ${size.products
           .map(
             (prod) => `
@@ -273,21 +286,22 @@ export const createDispatchPDF = (
         .subtext { font-size: 14px; }
         .gap-5 { gap: 5px; }
         .total-footer { background: #f9f9f9; border-top: 2px solid #000; }
+        .border-right { border-right: 1px solid #000; height: 100%; }
       </style>
     </head>
     <body>
       <h2 style="text-align: center;">${info.title || "Dispatch"} - ${new Date().toLocaleDateString()}</h2>
       <div class="grid-container">
         <div class="grid-row header-row" style="grid-template-columns: ${gridTemplate}">
-          <div>Retailer</div>
-          ${columns.map((c) => `<div class="text-center">${c.size_ml} ml</div>`).join("")}
+          <div class="border-right">Retailer</div>
+          ${columns.map((c) => `<div class="text-center border-right">${c.size_ml}${isNaN(parseInt(c.size_ml)) ? "" : " ml"}</div>`).join("")}
           <div class="text-center">Total</div>
         </div>
 
         ${rowsHTML}
 
         <div class="grid-row total-footer" style="grid-template-columns: ${gridTemplate}">
-          <div class="bold">GRAND TOTAL</div>
+          <div class="bold border-right">GRAND TOTAL</div>
           ${totalRowHTML}
           <div class="text-center bold">
             <div style="font-size: 16px;">${grandTotalQty}</div>
@@ -303,7 +317,6 @@ export const createDispatchPDF = (
   if (printWindow) {
     printWindow.document.write(html);
     printWindow.document.close();
-    // Give images/styles a moment to settle
     printWindow.onload = () => {
       printWindow.print();
     };
