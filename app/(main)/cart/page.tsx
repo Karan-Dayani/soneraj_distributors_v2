@@ -66,7 +66,7 @@ export default function CheckoutPage() {
     }
     const Sales_Order = {
       customerid: selectedRetailerId,
-      status: "pending",
+      status: "pending" as "pending" | "completed",
     };
 
     const Sales_Order_Items = products.flatMap((p) => {

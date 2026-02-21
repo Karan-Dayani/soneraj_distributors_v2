@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 import { useLogout } from "../utils/hooks/useLogout";
 import Link from "next/link";
+import CustomAlert from "./CustomAlert";
 
 const menuItems = [
   { name: "Home", icon: <Home size={20} />, route: "/" },
@@ -31,7 +32,8 @@ const menuItems = [
 export default function Header() {
   const { username, role } = useUser();
   const { logout } = useLogout();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [logOutAlert, setLogOutAlert] = useState<boolean>(false);
 
   return (
     <>
@@ -114,7 +116,7 @@ export default function Header() {
           {/* --- Footer / User Section --- */}
           <div className="p-4 border-t border-gunmetal bg-shadow-grey">
             <button
-              onClick={logout}
+              onClick={() => setLogOutAlert(true)}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-red-900/50 text-red-200 hover:bg-red-900/70 transition-all cursor-pointer"
             >
               <LogOutIcon size={20} />
@@ -123,6 +125,16 @@ export default function Header() {
           </div>
         </div>
       </div>
+      <CustomAlert
+        isOpen={logOutAlert}
+        onClose={() => {
+          setLogOutAlert(false);
+        }}
+        title="Log Out"
+        message="Are you sure you want to log Out ?"
+        type="danger"
+        onConfirm={() => logout()}
+      />
     </>
   );
 }

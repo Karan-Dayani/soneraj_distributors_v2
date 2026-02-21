@@ -26,7 +26,7 @@ export default function LoginPage() {
       // 1. Lookup Email
       const { data, error: rpcError } = await supabase.rpc(
         "get_email_from_username",
-        { p_username: username }
+        { p_username: username },
       );
 
       const emailData = data as { email: string } | null;
@@ -121,7 +121,13 @@ export default function LoginPage() {
             disabled={loading}
             onClick={(e) => handleLogin(e)}
           >
-            Login
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-platinum border-t-gunmetal rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              "Login"
+            )}
           </button>
         </form>
 
