@@ -129,7 +129,10 @@ export const createDispatchPDF = (
   rows: OrderRow[],
   info: { title: string; name: string },
 ) => {
-  const { columns, data } = buildCustomerTable(rows);
+  let { columns, data } = buildCustomerTable(rows);
+
+  columns = columns.reverse(); // Reverse columns to show larger sizes first
+  data = data;
 
   // Calculate Grand Totals
   const totalsBySize: SizeCell[] = columns.map((col) => {
@@ -213,7 +216,7 @@ export const createDispatchPDF = (
                       (b) => `
                     <div class="batch-line">
                       ${b.batch_code ? `<span>${b.batch_code} / </span>` : ""}
-                      <span class="bold">${b.qty}</span>
+                      <span class="bold" style="font-size: 18px;">${b.qty}</span>
                     </div>
                   `,
                     )
@@ -228,7 +231,7 @@ export const createDispatchPDF = (
           })
           .join("")}
         <div class="text-center bold">
-          <div>${row.total_qty}</div>
+          <div>${row.total_qty} cs</div>
           <div class="subtext">${rowWeight.toFixed(2)} kg</div>
         </div>
       </div>
@@ -244,16 +247,9 @@ export const createDispatchPDF = (
           .map(
             (prod) => `
           <div class="product-block">
-            ${prod.batches
-              .map(
-                (b) => `
               <div class="batch-line">
-                ${b.batch_code ? `<span>${b.batch_code} / </span>` : ""}
-                <span class="bold">${b.qty}</span>
+                <span class="bold">${prod.total_qty}</span>
               </div>
-            `,
-              )
-              .join("")}
             <div class="separator"></div>
             <div class="product-name bold">${prod.product_short_name}</div>
           </div>
@@ -304,7 +300,7 @@ export const createDispatchPDF = (
           <div class="bold border-right">GRAND TOTAL</div>
           ${totalRowHTML}
           <div class="text-center bold">
-            <div style="font-size: 16px;">${grandTotalQty}</div>
+            <div style="font-size: 16px;">${grandTotalQty} cs</div>
             <div class="subtext">${grandTotalWeight.toFixed(2)} kg</div>
           </div>
         </div>

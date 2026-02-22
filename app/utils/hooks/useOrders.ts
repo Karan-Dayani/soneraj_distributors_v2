@@ -21,6 +21,18 @@ export function useOrders({ status }: useOrderOption = {}) {
       );
       if (status) {
         query = query.eq("status", status);
+
+        if (status === "completed") {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+
+          query = query
+            .gte("completed_at", today.toISOString())
+            .lt("completed_at", tomorrow.toISOString());
+        }
       }
 
       const { data, error } = await query;
