@@ -15,6 +15,7 @@ import CustomAlert from "@/app/components/CustomAlert";
 import { useCallback, useState } from "react";
 import { useToast } from "@/app/context/ToastContext";
 import CompletedOrderCard from "./CompletedOrderCard";
+import { useUser } from "@/app/context/UserContext";
 
 type CompeleteBatchType = {
   sales_order_item_id: number;
@@ -23,6 +24,7 @@ type CompeleteBatchType = {
 };
 
 export default function OrderDetails() {
+  const { privileges } = useUser();
   const params = useParams();
   const router = useRouter();
   const { addToast } = useToast();
@@ -112,9 +114,10 @@ export default function OrderDetails() {
           })}
           {currOrder?.status === "pending" && (
             <div className="flex flex-col sm:flex-row gap-4 w-full">
-              <button
-                onClick={() => setCancelOrderAlert(true)}
-                className="
+              {privileges.includes(6) && (
+                <button
+                  onClick={() => setCancelOrderAlert(true)}
+                  className="
                           group flex-1 w-full sm:w-auto min-w-[140px] py-3.5 px-4
                           bg-red-50 text-red-600 border border-red-100 rounded-xl
                           font-bold text-sm uppercase tracking-wide
@@ -122,18 +125,20 @@ export default function OrderDetails() {
                           active:scale-[0.98] transition-all duration-200
                           flex items-center justify-center gap-2 cursor-pointer
                         "
-              >
-                Cancel
-                <X
-                  size={20}
-                  className="opacity-70 group-hover:opacity-100 transition-opacity"
-                />
-              </button>
+                >
+                  Cancel
+                  <X
+                    size={20}
+                    className="opacity-70 group-hover:opacity-100 transition-opacity"
+                  />
+                </button>
+              )}
 
               {/* 2. RESET BUTTON (Secondary - Outline) */}
-              <button
-                onClick={() => window.location.reload()}
-                className="
+              {privileges.includes(7) && (
+                <button
+                  onClick={() => window.location.reload()}
+                  className="
                           group flex-1 w-full sm:w-auto min-w-[140px] py-3.5 px-4
                           bg-white text-slate-grey border-2 border-alabaster-grey rounded-xl
                           font-bold text-sm uppercase tracking-wide
@@ -141,19 +146,21 @@ export default function OrderDetails() {
                           active:scale-[0.98] transition-all duration-200
                           flex items-center justify-center gap-2 cursor-pointer
                         "
-              >
-                Reset
-                <RefreshCcw
-                  size={20}
-                  className="group-hover:rotate-180 transition-transform duration-500 ease-out"
-                />
-              </button>
+                >
+                  Reset
+                  <RefreshCcw
+                    size={20}
+                    className="group-hover:rotate-180 transition-transform duration-500 ease-out"
+                  />
+                </button>
+              )}
 
               {/* 3. COMPLETE BUTTON (Primary - Gunmetal) */}
-              <button
-                disabled={!isOrderCompletable || !isOrderCompletable2}
-                onClick={handleSubmit}
-                className="
+              {privileges.includes(7) && (
+                <button
+                  disabled={!isOrderCompletable || !isOrderCompletable2}
+                  onClick={handleSubmit}
+                  className="
                           group flex-1 w-full sm:w-auto min-w-40 py-3.5 px-4
                           bg-gunmetal text-white border-2 border-transparent rounded-xl
                           font-bold text-sm uppercase tracking-wide shadow-md
@@ -162,17 +169,18 @@ export default function OrderDetails() {
                           disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
                           flex items-center justify-center gap-2 cursor-pointer
                         "
-              >
-                <Check
-                  size={20}
-                  strokeWidth={3}
-                  className="group-hover:scale-110 transition-transform"
-                />
-                Complete
-              </button>
+                >
+                  <Check
+                    size={20}
+                    strokeWidth={3}
+                    className="group-hover:scale-110 transition-transform"
+                  />
+                  Complete
+                </button>
+              )}
             </div>
           )}
-          {currOrder?.status === "completed" && (
+          {currOrder?.status === "completed" && privileges.includes(8) && (
             <div className="flex flex-col sm:flex-row gap-4 w-full">
               <button
                 onClick={() => {

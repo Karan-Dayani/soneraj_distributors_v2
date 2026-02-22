@@ -189,16 +189,19 @@ export type Database = {
       profiles: {
         Row: {
           id: string;
+          Privileges: number[];
           role: string | null;
           username: string;
         };
         Insert: {
           id: string;
+          Privileges?: number[];
           role?: string | null;
           username: string;
         };
         Update: {
           id?: string;
+          Privileges?: number[];
           role?: string | null;
           username?: string;
         };

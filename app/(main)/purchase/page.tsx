@@ -1,7 +1,9 @@
 "use client";
+import Error from "@/app/components/Error";
 import Loader from "@/app/components/Loader";
 import SimpleSelect from "@/app/components/SelectDropdown";
 import { useToast } from "@/app/context/ToastContext";
+import { useUser } from "@/app/context/UserContext";
 import { useProducts, useProductVariants } from "@/app/utils/hooks/useProducts";
 import { usePurchaseStock } from "@/app/utils/hooks/useStock";
 import { useSuppliers } from "@/app/utils/hooks/useSuppliers";
@@ -14,6 +16,7 @@ type Product = Database["public"]["Tables"]["Products"]["Row"];
 // type StockBatch = Database["public"]["Tables"]["Stock_Batches"]["Row"];
 
 export default function Purchase() {
+  const { privileges } = useUser();
   const { addToast } = useToast();
   // supplier
   const { data: suppliers, isLoading: isSupplierLoading } = useSuppliers();
@@ -122,6 +125,9 @@ export default function Purchase() {
   };
 
   if (isPending || isSupplierLoading) return <Loader />;
+
+  if (!privileges.includes(1))
+    return <Error error="You Dont have Access to this Page." />;
 
   return (
     <div className="p-6 md:p-8 max-w-6xl mx-auto">

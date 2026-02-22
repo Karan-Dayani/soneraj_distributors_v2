@@ -9,6 +9,7 @@ import Loader from "@/app/components/Loader";
 import Error from "@/app/components/Error";
 import { useToast } from "@/app/context/ToastContext";
 import { useProductVariants } from "@/app/utils/hooks/useProducts";
+import { useUser } from "@/app/context/UserContext";
 
 type ProductVariant = Pick<
   Database["public"]["Tables"]["Product_Stock"]["Row"],
@@ -25,6 +26,7 @@ type ProductVariant = Pick<
 };
 
 export default function Product() {
+  const { privileges } = useUser();
   const params = useParams();
   const { addToast } = useToast();
   const { id } = params;
@@ -150,25 +152,26 @@ export default function Product() {
                   </div>
 
                   {/* --- Section 2: Input Area --- */}
-                  <div className="w-24 sm:w-full sm:p-5">
-                    {/* Label: Visible on Desktop, Hidden on Mobile */}
-                    <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
-                      Quantity
-                    </label>
+                  {privileges.includes(5) && (
+                    <div className="w-24 sm:w-full sm:p-5">
+                      {/* Label: Visible on Desktop, Hidden on Mobile */}
+                      <label className="hidden sm:block text-sm font-medium text-iron-grey mb-2">
+                        Quantity
+                      </label>
 
-                    <div className="relative">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={currentValue}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setLocalQuantities((prev) => ({
-                            ...prev,
-                            [variant.id]: val,
-                          }));
-                        }}
-                        className="
+                      <div className="relative">
+                        <input
+                          type="number"
+                          placeholder="0"
+                          value={currentValue}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLocalQuantities((prev) => ({
+                              ...prev,
+                              [variant.id]: val,
+                            }));
+                          }}
+                          className="
                     w-full rounded-lg text-center sm:text-left
                     bg-bright-snow border border-pale-slate
                     text-gunmetal font-bold
@@ -183,28 +186,31 @@ export default function Product() {
                     focus:outline-none focus:ring-2 focus:ring-gunmetal focus:bg-white focus:border-transparent
                     transition-all
                   "
-                      />
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             })}
         </div>
 
-        <div className="mt-10 pt-6 border-t border-alabaster-grey flex justify-end">
-          <button
-            onClick={handleSaveToCart}
-            className="
+        {privileges.includes(5) && (
+          <div className="mt-10 pt-6 border-t border-alabaster-grey flex justify-end">
+            <button
+              onClick={handleSaveToCart}
+              className="
             flex items-center gap-2 px-8 py-3.5 
             bg-gunmetal text-white rounded-lg 
             font-semibold shadow-lg hover:bg-shadow-grey hover:scale-[1.01] active:scale-[0.98] 
             transition-all duration-200 w-full md:w-auto justify-center
           "
-          >
-            <ShoppingCart size={20} />
-            <span>Add to cart</span>
-          </button>
-        </div>
+            >
+              <ShoppingCart size={20} />
+              <span>Add to cart</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

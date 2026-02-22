@@ -19,18 +19,27 @@ import { useLogout } from "../utils/hooks/useLogout";
 import Link from "next/link";
 import CustomAlert from "./CustomAlert";
 
-const menuItems = [
-  { name: "Home", icon: <Home size={20} />, route: "/" },
-  { name: "Cart", icon: <ShoppingCart size={20} />, route: "/cart" },
-  { name: "Orders", icon: <Package size={20} />, route: "/orders" },
-  { name: "Purchase", icon: <DiamondPlus size={20} />, route: "/purchase" },
-  { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
-  { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
-  { name: "Shortage", icon: <DiamondMinus size={20} />, route: "/shortage" },
-];
-
 export default function Header() {
-  const { username, role } = useUser();
+  const { username, role, privileges } = useUser();
+  const menuItems = [
+    { name: "Home", icon: <Home size={20} />, route: "/" },
+    ...(privileges.includes(5)
+      ? [{ name: "Cart", icon: <ShoppingCart size={20} />, route: "/cart" }]
+      : []),
+    { name: "Orders", icon: <Package size={20} />, route: "/orders" },
+    ...(privileges.includes(1)
+      ? [
+          {
+            name: "Purchase",
+            icon: <DiamondPlus size={20} />,
+            route: "/purchase",
+          },
+        ]
+      : []),
+    { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
+    { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
+    { name: "Shortage", icon: <DiamondMinus size={20} />, route: "/shortage" },
+  ];
   const { logout } = useLogout();
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [logOutAlert, setLogOutAlert] = useState<boolean>(false);

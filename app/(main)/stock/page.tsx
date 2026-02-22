@@ -11,6 +11,7 @@ import { Pen, Trash2, Save, Search } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import Error from "@/app/components/Error";
 import CustomModal from "@/app/components/CustomModal";
+import { useUser } from "@/app/context/UserContext";
 
 // --- Types ---
 type RawStockItem = {
@@ -43,6 +44,7 @@ type SelectedBatch = {
 };
 
 export default function Stock() {
+  const { privileges } = useUser();
   const { addToast } = useToast();
 
   const { data: stockItems, isLoading } = useStock() as {
@@ -230,9 +232,11 @@ export default function Stock() {
               Qty
             </div>
             {/* 5. Edit: 1/12 mobile, 1/5 desktop */}
-            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center px-2">
-              Edit
-            </div>
+            {privileges.includes(2) && (
+              <div className="basis-2/12 md:basis-1/5 flex items-center justify-center px-2">
+                Edit
+              </div>
+            )}
           </div>
         </div>
 
@@ -265,17 +269,19 @@ export default function Stock() {
                   </div>
 
                   {/* Matches Header Col 5 */}
-                  <div className="basis-2/12 md:basis-1/5 flex items-center justify-center px-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditClick(item, batch);
-                      }}
-                      className="text-slate-grey hover:text-gunmetal p-1 rounded-full hover:bg-platinum transition-colors cursor-pointer"
-                    >
-                      <Pen size={16} />
-                    </button>
-                  </div>
+                  {privileges.includes(2) && (
+                    <div className="basis-2/12 md:basis-1/5 flex items-center justify-center px-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(item, batch);
+                        }}
+                        className="text-slate-grey hover:text-gunmetal p-1 rounded-full hover:bg-platinum transition-colors cursor-pointer"
+                      >
+                        <Pen size={16} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
