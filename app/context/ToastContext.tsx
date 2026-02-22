@@ -169,7 +169,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
       const id = Math.random().toString(36).substring(2, 9);
       setToasts((prev) => [...prev, { id, message, type, duration }]);
     },
-    []
+    [],
   );
 
   const removeToast = useCallback((id: string) => {
@@ -192,7 +192,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
       `}</style>
 
       {/* Toast Container - Fixed Position */}
-      <div className="fixed top-6 right-6 z-9999 flex flex-col gap-3 pointer-events-none perspective-[1000px]">
+      <div className="fixed bottom-6 right-6 z-9999 flex flex-col gap-3 pointer-events-none perspective-[1000px]">
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto transition-all">
             <ToastItem toast={toast} onRemove={removeToast} />
