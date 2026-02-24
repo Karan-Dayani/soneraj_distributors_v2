@@ -7,11 +7,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash,
+  Edit,
 } from "lucide-react";
 import {
   useCreateCustomer,
   useCustomers,
   useDeleteCustomer,
+  useEditCustomer,
 } from "@/app/utils/hooks/useCustomers";
 import { useDebounce } from "@/app/utils/hooks/useDebounce";
 import { useToast } from "@/app/context/ToastContext";
@@ -19,6 +21,7 @@ import CustomAlert from "@/app/components/CustomAlert";
 import { useUsers } from "@/app/utils/hooks/useSuppliers";
 import SimpleSelect from "@/app/components/SelectDropdown";
 import { useUser } from "@/app/context/UserContext";
+import CustomModal from "@/app/components/CustomModal";
 
 export default function Retailers() {
   const { privileges } = useUser();
@@ -60,8 +63,18 @@ export default function Retailers() {
   const totalPages = Math.ceil((Customers?.count || 0) / pageSize);
   const { mutate: createCustomer } = useCreateCustomer();
   const { mutate: deleteCustomer } = useDeleteCustomer();
+  const { mutate: editCustomer } = useEditCustomer();
 
   const [removeRetailerID, setRemoveRetailerID] = useState<number | null>(null);
+  const [editRetailer, setEditRetailer] = useState<{
+    address: string | null;
+    created_at: string;
+    id: number;
+    license_no: string | null;
+    name: string | null;
+    route_no: string | null;
+    user_id: string | null;
+  } | null>(null);
 
   return (
     <>
@@ -259,19 +272,34 @@ export default function Retailers() {
                       <span className="font-medium text-gunmetal">
                         {retailer.name}, {retailer.address} (
                         {retailer.license_no})
+                        {/* {retailer.user_id &&
+                          users?.find((u) => u.id === retailer.user_id)
+                            ?.username} */}
                       </span>
                     </div>
 
-                    {privileges.includes(4) && (
+                    <div className="flex gap-2">
                       <div className="space-x-2">
                         <button
-                          onClick={() => setRemoveRetailerID(retailer.id)}
-                          className="p-2 text-red-400 hover:text-red-500 hover:bg-red-100 rounded-lg transition-all"
+                          onClick={() => {
+                            setEditRetailer(retailer);
+                          }}
+                          className="p-2 text-blue-400 hover:text-blue-500 hover:bg-blue-100 rounded-lg transition-all cursor-pointer"
                         >
-                          <Trash size={18} />
+                          <Edit size={18} />
                         </button>
                       </div>
-                    )}
+                      {privileges.includes(4) && (
+                        <div className="space-x-2">
+                          <button
+                            onClick={() => setRemoveRetailerID(retailer.id)}
+                            className="p-2 text-red-400 hover:text-red-500 hover:bg-red-100 rounded-lg transition-all cursor-pointer"
+                          >
+                            <Trash size={18} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))
               ) : (
@@ -333,6 +361,170 @@ export default function Retailers() {
         message={`are you sure ?`}
         type="warning"
       />
+      <CustomModal
+        isOpen={editRetailer ? true : false}
+        onClose={() => setEditRetailer(null)}
+        title="Edit Retailer"
+      >
+        {/* Modal Content Wrapper */}
+        <div className="flex flex-col gap-6 pt-2">
+          {/* FORM CONTAINER - GRID SYSTEM */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 1. RETAILER NAME (Full Width) */}
+            <div className="md:col-span-2">
+              <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                Retailer Name
+                <div className="mt-2">
+                  <input
+                    name="name"
+                    value={editRetailer?.name || ""}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+
+                      setEditRetailer((prev) => ({
+                        ...prev!,
+                        name: newValue,
+                      }));
+                    }}
+                    type="text"
+                    placeholder="Enter retailer name..."
+                    className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                  />
+                </div>
+              </label>
+            </div>
+
+            {/* 2. ADDRESS (Full Width) */}
+            <div className="md:col-span-2">
+              <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                Address
+                <div className="mt-2">
+                  <input
+                    name="address"
+                    value={editRetailer?.address || ""}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+
+                      setEditRetailer((prev) => ({
+                        ...prev!,
+                        address: newValue,
+                      }));
+                    }}
+                    type="text"
+                    placeholder="Enter full address..."
+                    className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                  />
+                </div>
+              </label>
+            </div>
+
+            {/* 3. LICENSE NO (1/2 Width) */}
+            <div className="w-full">
+              <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                License No
+                <div className="mt-2">
+                  <input
+                    name="license_no"
+                    value={editRetailer?.license_no || ""}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+
+                      setEditRetailer((prev) => ({
+                        ...prev!,
+                        license_no: newValue,
+                      }));
+                    }}
+                    type="text"
+                    placeholder="Lic. Number"
+                    className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                  />
+                </div>
+              </label>
+            </div>
+
+            {/* 4. ROUTE NO (1/2 Width) */}
+            <div className="w-full">
+              <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
+                Route No
+                <div className="mt-2">
+                  <input
+                    name="route_no"
+                    value={editRetailer?.route_no || ""}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+
+                      setEditRetailer((prev) => ({
+                        ...prev!,
+                        route_no: newValue,
+                      }));
+                    }}
+                    type="text"
+                    placeholder="Route #"
+                    className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal placeholder-pale-slate-2 font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
+                  />
+                </div>
+              </label>
+            </div>
+
+            {/* 5. SUPPLIER (Full Width for Modal Balance) */}
+            <div className="md:col-span-2">
+              <SimpleSelect
+                options={users || []}
+                displayKey="username"
+                idKey="id"
+                label="Supplier"
+                placeholder="Select supplier"
+                selectedId={editRetailer?.user_id || ""}
+                onSelect={(item) => {
+                  setEditRetailer((prev) => ({
+                    ...prev!,
+                    user_id: item.id,
+                  }));
+                }}
+                onClear={() => {}}
+              />
+            </div>
+          </div>
+
+          {/* ACTION BUTTONS */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-platinum mt-2">
+            {/* Cancel Button */}
+            <button
+              onClick={() => setEditRetailer(null)}
+              className="px-6 py-3.5 rounded-lg text-slate-grey font-semibold hover:bg-platinum/50 transition-colors duration-200"
+            >
+              Cancel
+            </button>
+
+            {/* Save Changes Button */}
+            <button
+              onClick={() => {
+                console.log(editRetailer);
+                editCustomer(editRetailer!, {
+                  onSuccess: () => {
+                    addToast("Updated Retailer.", "success");
+                    setEditRetailer(null);
+                  },
+                  onError: (err) => {
+                    addToast(
+                      "Failed to update retailer " + err.message,
+                      "error",
+                    );
+                  },
+                });
+              }}
+              className="
+          flex items-center gap-2 px-8 py-3.5 
+          bg-gunmetal text-white rounded-lg cursor-pointer
+          font-semibold shadow-lg hover:bg-shadow-grey hover:scale-[1.01] active:scale-[0.98] 
+          transition-all duration-200
+        "
+            >
+              <span>Save Changes</span>
+            </button>
+          </div>
+        </div>
+      </CustomModal>
     </>
   );
 }

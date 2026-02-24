@@ -97,3 +97,28 @@ export function useDeleteCustomer() {
     },
   });
 }
+
+export function useEditCustomer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (updateCustomer: {
+      address: string | null;
+      created_at: string;
+      id: number;
+      license_no: string | null;
+      name: string | null;
+      route_no: string | null;
+      user_id: string | null;
+    }) => {
+      const { error } = await supabase
+        .from("Customers")
+        .update(updateCustomer)
+        .eq("id", updateCustomer.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["Customers"] });
+    },
+  });
+}
