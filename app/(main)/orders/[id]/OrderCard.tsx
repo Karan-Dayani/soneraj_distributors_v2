@@ -170,7 +170,7 @@ export default function OrderCard({ item, add }: any) {
               Size
             </p>
             <p className="text-iron-grey text-sm font-bold">
-              {item.Product_Stock?.Bottle_Sizes?.size_ml}ml
+              {item.Product_Stock?.Bottle_Sizes?.size_ml} ml
             </p>
           </div>
           <div>

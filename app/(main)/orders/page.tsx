@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Circle,
   ListFilter,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -175,6 +176,16 @@ export default function Orders() {
           </div>
 
           <div className="order-2 md:order-3 flex gap-2 items-center">
+            {selectedOrders.length > 0 && (
+              <div>
+                <button
+                  onClick={() => setSelectedOrders([])}
+                  className="p-3 bg-red-300 hover:bg-red-400 rounded-xl border border-red-600 cursor-pointer transition-colors"
+                >
+                  <X className="" />
+                </button>
+              </div>
+            )}
             <div>
               <button
                 onClick={() => setFilterModal(true)}

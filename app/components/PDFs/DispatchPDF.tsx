@@ -2,6 +2,8 @@
 
 export interface OrderRow {
   customer_name: string;
+  customer_license_no: string;
+  customer_address: string;
   product_short_name: string;
   size_ml: string;
   weight_kg: number;
@@ -29,6 +31,8 @@ export interface SizeCell {
 
 export interface CustomerRow {
   customer_name: string;
+  customer_license_no: string;
+  customer_address: string;
   sizes: SizeCell[];
   total_qty: number;
 }
@@ -72,6 +76,8 @@ export function buildCustomerTable(rows: OrderRow[]): {
     if (!customerMap.has(row.customer_name)) {
       customerMap.set(row.customer_name, {
         customer_name: row.customer_name,
+        customer_license_no: row.customer_license_no,
+        customer_address: row.customer_address,
         sizes: columns.map((col) => ({
           size_ml: col.size_ml,
           weight_kg: col.weight_kg,
@@ -193,13 +199,13 @@ export const createDispatchPDF = (
   const rowsHTML = data
     .map((row) => {
       // Weight calculated per row from the original rows for accuracy
-      const rowWeight = rows
-        .filter((r) => r.customer_name === row.customer_name)
-        .reduce((acc, r) => acc + r.qty * r.weight_kg, 0);
+      // const rowWeight = rows
+      //   .filter((r) => r.customer_name === row.customer_name)
+      //   .reduce((acc, r) => acc + r.qty * r.weight_kg, 0);
 
       return `
       <div class="grid-row border-b" style="grid-template-columns: ${gridTemplate}">
-        <div class="text-left bold border-right">${row.customer_name}</div>
+        <div class="text-left bold border-right"><div>${row.customer_name} (${row.customer_license_no})</div><div>${row.customer_address}</div></div>
         ${columns
           .map((col) => {
             const size = row.sizes.find((s) => s.size_ml === col.size_ml);
@@ -215,7 +221,7 @@ export const createDispatchPDF = (
                     .map(
                       (b) => `
                     <div class="batch-line">
-                      ${b.batch_code ? `<span>${b.batch_code} / </span>` : ""}
+                      ${b.batch_code ? `<span style="font-size: 14px;">${b.batch_code} / </span>` : ""}
                       <span class="bold" style="font-size: 18px;">${b.qty}</span>
                     </div>
                   `,
@@ -232,7 +238,6 @@ export const createDispatchPDF = (
           .join("")}
         <div class="text-center bold">
           <div>${row.total_qty} cs</div>
-          <div class="subtext">${rowWeight.toFixed(2)} kg</div>
         </div>
       </div>
     `;

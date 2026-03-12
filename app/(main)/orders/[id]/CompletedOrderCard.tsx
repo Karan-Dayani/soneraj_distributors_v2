@@ -21,7 +21,7 @@ export default function CompletedOrderCard({ item }: any) {
               Size
             </p>
             <p className="text-iron-grey font-bold text-sm">
-              {item.Product_Stock?.Bottle_Sizes?.size_ml}ml
+              {item.Product_Stock?.Bottle_Sizes?.size_ml} ml
             </p>
           </div>
           <div>
