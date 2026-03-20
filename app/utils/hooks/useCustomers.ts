@@ -19,44 +19,33 @@ export function useCustomers({
   pageSize = 10,
 }: UseCustomersOptions = {}) {
   return useQuery({
-    // 1. Add page to the key. When 'page' changes, the query refetches automatically.
     queryKey: ["Customers", page, search],
 
     queryFn: async () => {
-      // Calculate the range for Supabase (0-based index)
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-
-      let query = supabase
-        .from("Customers")
-        .select("*", { count: "exact" }) // Ask for total count
-        .range(from, to) // Limit the rows
-        .order("created_at", { ascending: false }); // Always order paginated data!
-
-      // 2. Only apply filter if we have a search term
-      if (search) {
-        // ilike is "Case Insensitive Like"
-        // %search% means "contains search"
-        // query = query.ilike("name", `%${search}%`);
-        query = query.or(
-          `name.ilike.%${search}%,address.ilike.%${search}%,license_no.ilike.%${search}%`,
-        );
-      }
-
-      const { data, count, error } = await query;
+      console.log({
+        search,
+        page,
+        pageSize,
+      });
+      const { data, error } = await supabase.rpc("search_customers", {
+        p_search: search,
+        p_page: page,
+        p_page_size: pageSize,
+      });
 
       if (error) throw error;
 
-      // Return both the list and the total count
-      return { data, count };
+      // 🧠 Extract total count (comes from window function)
+      const count = data?.[0]?.total_count ?? 0;
+      return {
+        data,
+        count,
+      };
     },
 
-    // 2. This is Magic: It keeps showing old data while fetching the new page.
-    // No more "Loading..." flickering!
     placeholderData: keepPreviousData,
   });
 }
-
 // --- 2. The WRITE Hook (Create Data) ---
 export function useCreateCustomer() {
   const queryClient = useQueryClient();

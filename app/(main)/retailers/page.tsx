@@ -269,13 +269,15 @@ export default function Retailers() {
                       <div className="w-10 h-10 rounded-full bg-bright-snow border border-platinum flex items-center justify-center text-slate-grey font-bold text-xs">
                         {retailer.name?.substring(0, 2).toUpperCase()}
                       </div>
-                      <span className="font-medium text-gunmetal">
-                        {retailer.name}, {retailer.address} (
-                        {retailer.license_no})
-                        {/* {retailer.user_id &&
-                          users?.find((u) => u.id === retailer.user_id)
-                            ?.username} */}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gunmetal">
+                          {retailer.name}, {retailer.address} (
+                          {retailer.license_no})
+                        </span>
+                        <span className="text-sm text-iron-grey">
+                          {retailer.username}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex gap-2">
