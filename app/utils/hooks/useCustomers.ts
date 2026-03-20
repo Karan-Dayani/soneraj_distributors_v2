@@ -100,10 +100,19 @@ export function useEditCustomer() {
       route_no: string | null;
       user_id: string | null;
     }) => {
+      const { id, name, address, license_no, route_no, user_id } =
+        updateCustomer;
+
       const { error } = await supabase
         .from("Customers")
-        .update(updateCustomer)
-        .eq("id", updateCustomer.id);
+        .update({
+          name,
+          address,
+          license_no,
+          route_no,
+          user_id,
+        })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
