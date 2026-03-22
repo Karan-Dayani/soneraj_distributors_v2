@@ -134,6 +134,23 @@ export function useRemoveStock() {
   });
 }
 
+export function useClearStock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc("clear_stock_smart");
+
+      if (error) throw error;
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stock"] });
+      queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
+      queryClient.invalidateQueries({ queryKey: ["shortage"] });
+    },
+  });
+}
+
 type UpdateBatchVariables = {
   stockId: number;
   batchId: number;

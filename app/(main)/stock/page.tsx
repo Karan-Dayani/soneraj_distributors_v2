@@ -3,15 +3,18 @@
 import { useState } from "react";
 import Loader from "@/app/components/Loader";
 import {
+  useClearStock,
   useRemoveStock,
   useStock,
   useUpdateStock,
 } from "@/app/utils/hooks/useStock";
-import { Pen, Trash2, Save, Search } from "lucide-react";
+import { Pen, Trash2, Save, Search, ArrowDownToLine, X } from "lucide-react";
 import { useToast } from "@/app/context/ToastContext";
 import Error from "@/app/components/Error";
 import CustomModal from "@/app/components/CustomModal";
 import { useUser } from "@/app/context/UserContext";
+import { createStockPDF } from "@/app/components/PDFs/StockPDF";
+import CustomAlert from "@/app/components/CustomAlert";
 
 // --- Types ---
 type RawStockItem = {
@@ -46,6 +49,7 @@ type SelectedBatch = {
 export default function Stock() {
   const { privileges } = useUser();
   const { addToast } = useToast();
+  const [clearStockAlert, setClearStockAlert] = useState<boolean>(false);
 
   const { data: stockItems, isLoading } = useStock() as {
     data: RawStockItem[] | undefined;
@@ -54,6 +58,7 @@ export default function Stock() {
 
   const { mutate: removeStock, isPending: isDeleting } = useRemoveStock();
   const { mutate: updateStock } = useUpdateStock();
+  const { mutate: clearStock } = useClearStock();
 
   // --- State ---
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -184,8 +189,28 @@ export default function Stock() {
       <div className="max-w-6xl mx-auto">
         <div className="sticky top-0 bg-bright-snow z-10 pt-6 md:pt-8 px-6 md:px-8">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
-            <div>
+            <div className=" w-full flex items-center justify-between">
               <h1 className="text-3xl font-bold text-gunmetal">Stock</h1>
+              <div className="flex gap-4">
+                {privileges.includes(9) && (
+                  <button
+                    onClick={() => {
+                      setClearStockAlert(true);
+                    }}
+                    className="p-3 bg-red-200 hover:bg-red-400 rounded-xl border border-red-400 cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                  >
+                    <X className="" />
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    createStockPDF(sortedStockItems);
+                  }}
+                  className="p-3 bg-white hover:bg-bright-snow rounded-xl border border-alabaster-grey cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                >
+                  <ArrowDownToLine className="" />
+                </button>
+              </div>
             </div>
 
             <div className="w-full md:w-auto">
@@ -355,6 +380,24 @@ export default function Stock() {
           </div>
         </div>
       </CustomModal>
+      <CustomAlert
+        isOpen={clearStockAlert}
+        onClose={() => setClearStockAlert(false)}
+        onConfirm={() => {
+          clearStock(undefined, {
+            onSuccess: () => {
+              addToast("Stock cleared successfully", "success");
+              setClearStockAlert(false);
+            },
+            onError: (err) => {
+              addToast(err.message || "Failed to clear stock", "error");
+            },
+          });
+        }}
+        title="Clear All Stock"
+        message="Are you sure you want to clear stock?"
+        type="warning"
+      />
     </>
   );
 }

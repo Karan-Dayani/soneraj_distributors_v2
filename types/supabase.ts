@@ -348,6 +348,7 @@ export type Database = {
         Args: { p_order_id: number; p_order_item_ids: number[] };
         Returns: undefined;
       };
+      clear_stock_smart: { Args: never; Returns: undefined };
       delete_completed_order: {
         Args: { p_order_id: number };
         Returns: undefined;
