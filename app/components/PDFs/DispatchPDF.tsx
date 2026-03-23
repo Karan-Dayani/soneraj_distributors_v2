@@ -291,7 +291,7 @@ export const createDispatchPDF = (
       </style>
     </head>
     <body>
-      <h2 style="text-align: center;">${info.title || "Dispatch"} - ${new Date().toLocaleDateString()}</h2>
+      <h2 style="text-align: center;">${info.title || "Dispatch"} - ${new Date().toLocaleDateString("en-GB")}</h2>
       <div class="grid-container">
         <div class="grid-row header-row" style="grid-template-columns: ${gridTemplate}">
           <div class="border-right">Retailer</div>

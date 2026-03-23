@@ -18,7 +18,7 @@ type RawStockItem = {
 };
 
 export const createStockPDF = (stockData: RawStockItem[]) => {
-  const date = new Date().toDateString().slice(4);
+  const date = new Date().toLocaleDateString("en-GB");
 
   // Flatten the data so every batch is a separate row
   const rows = stockData

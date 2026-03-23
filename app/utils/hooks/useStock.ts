@@ -41,7 +41,7 @@ export function useStock() {
         `,
         )
         .neq("quantity", 0)
-        // Order batches by newest first
+        .neq("Stock_Batches.quantity", 0)
         .order("created_at", {
           foreignTable: "Stock_Batches",
           ascending: false,
