@@ -6,6 +6,7 @@ import { createDispatchPDF } from "@/app/components/PDFs/DispatchPDF";
 import { useDispatch, useOrders } from "@/app/utils/hooks/useOrders";
 import {
   ArrowDownToLine,
+  CalendarDays,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -21,25 +22,93 @@ export default function Orders() {
   const [selectedStatus, setSelectedStatus] = useState<"pending" | "completed">(
     "pending",
   );
+  const [dateModal, setDateModal] = useState(false);
 
-  const [monthModal, setMonthModal] = useState<boolean>(false);
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
+  const today = new Date();
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear] = useState(today.getFullYear());
+
+  const [rangeStart, setRangeStart] = useState<Date | null>(null);
+  const [rangeEnd, setRangeEnd] = useState<Date | null>(null);
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
     "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
-  const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState(currentYear);
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const handlePrevMonth = () => {
+    if (month === 0) {
+      setMonth(11);
+      setYear((y) => y - 1);
+    } else {
+      setMonth((m) => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (month === 11) {
+      setMonth(0);
+      setYear((y) => y + 1);
+    } else {
+      setMonth((m) => m + 1);
+    }
+  };
+
+  const handleDayClick = (day: number) => {
+    const clickedDate = new Date(year, month, day);
+
+    if (!rangeStart || (rangeStart && rangeEnd)) {
+      setRangeStart(clickedDate);
+      setRangeEnd(null);
+    } else {
+      if (clickedDate < rangeStart) {
+        setRangeEnd(rangeStart);
+        setRangeStart(clickedDate);
+      } else {
+        setRangeEnd(clickedDate);
+      }
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toISOString().split("T")[0];
+  };
+
+  const handleApply = () => {
+    setFilterFormData((prev) => ({
+      ...prev,
+      start_date: rangeStart ? formatDate(rangeStart) : "",
+      end_date: rangeEnd ? formatDate(rangeEnd) : "",
+    }));
+
+    setDateModal(false);
+  };
+
+  const handleClear = () => {
+    setRangeStart(null);
+    setRangeEnd(null);
+
+    setFilterFormData((prev) => ({
+      ...prev,
+      start_date: "",
+      end_date: "",
+    }));
+  };
 
   const [page, setPage] = useState(1);
   const limit = 20;
@@ -49,7 +118,8 @@ export default function Orders() {
     route_no: "",
     license_no: "",
     username: "",
-    month: "",
+    start_date: "",
+    end_date: "",
   };
 
   // Stores the temporary inputs in the modal
@@ -358,43 +428,42 @@ export default function Orders() {
               </div>
             </label>
           </div>
-          <div className="w-full">
-            <label className="text-sm font-bold uppercase tracking-widest text-slate-grey ml-1">
-              Month
-              {/* <div className="mt-2">
-                <input
-                  type="month"
-                  name="month"
-                  value={filterFormData.month || ""}
-                  onChange={handleFilterChange}
-                  className="w-full px-4 py-4 border-2 rounded-xl text-gunmetal font-medium focus:outline-none focus:bg-white focus:border-slate-grey bg-white border-platinum transition-all duration-200"
-                />
-              </div> */}
-              <div
-                onClick={() => setMonthModal(true)}
-                className="w-full px-4 py-4 border-2 rounded-xl bg-white border-platinum cursor-pointer flex justify-between items-center transition-all duration-200"
-              >
-                <span
-                  className={
-                    filterFormData.month
-                      ? "text-gunmetal font-medium"
-                      : "text-gray-400"
-                  }
-                >
-                  {filterFormData.month
-                    ? new Date(filterFormData.month + "-01").toLocaleString(
-                        "default",
-                        {
-                          month: "short",
-                          year: "numeric",
-                        },
-                      )
-                    : "Select Month"}
-                </span>
 
-                <span>📅</span>
-              </div>
+          <div className="w-full">
+            <label className="block text-xs font-bold uppercase tracking-widest text-slate-grey mb-2 ml-1">
+              Date Range
             </label>
+
+            <div className="relative group">
+              {/* Left Icon */}
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-pale-slate-2 group-hover:text-gunmetal transition-colors duration-300 pointer-events-none z-10">
+                <CalendarDays size={18} strokeWidth={2} />
+              </div>
+
+              {/* Trigger Button */}
+              <button
+                onClick={() => setDateModal(true)}
+                className={`
+              w-full pl-12 pr-10 py-3.5 text-left
+              bg-white border rounded-xl
+              font-medium
+              shadow-sm transition-all duration-200
+              focus:outline-none focus:border-gunmetal focus:ring-4 focus:ring-gunmetal/5
+              ${dateModal ? "border-gunmetal" : "border-alabaster-grey hover:border-pale-slate"}
+            `}
+              >
+                {filterFormData.start_date || filterFormData.end_date ? (
+                  <span className="text-gunmetal font-medium">
+                    {filterFormData.start_date || "?"} ------{" "}
+                    {filterFormData.end_date || "?"}
+                  </span>
+                ) : (
+                  <span className="text-pale-slate-2">
+                    Select Date Range...
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 mt-4">
@@ -475,69 +544,155 @@ export default function Orders() {
         </div>
       </CustomModal>
       <CustomModal
-        isOpen={monthModal}
-        onClose={() => setMonthModal(false)}
-        title="Select Month"
-        maxWidth="max-w-sm"
+        isOpen={dateModal}
+        onClose={() => setDateModal(false)}
+        title="Select Date Range"
+        maxWidth="max-w-[400px]"
       >
-        <div className="space-y-6 pt-2">
-          {/* 1. Year Selector */}
+        <div className="pt-2 flex flex-col gap-5">
+          {/* Calendar Header */}
           <div className="flex justify-between items-center bg-bright-snow p-2 rounded-xl border border-platinum">
             <button
-              onClick={() => setYear((y) => y - 1)}
+              onClick={handlePrevMonth}
               className="p-2 text-slate-grey hover:text-gunmetal hover:bg-white rounded-lg border border-transparent hover:border-alabaster-grey hover:shadow-sm transition-all duration-200"
             >
               <ChevronLeft size={20} />
             </button>
 
-            <div className="flex flex-col items-center">
-              <span className="text-xs font-bold text-pale-slate-2 uppercase tracking-widest mb-0.5">
-                Year
-              </span>
-              <span className="text-xl font-bold text-gunmetal font-mono leading-none">
-                {year}
+            <div className="text-center">
+              <span className="text-[15px] font-bold text-gunmetal">
+                {monthNames[month]} {year}
               </span>
             </div>
 
             <button
-              onClick={() => setYear((y) => y + 1)}
+              onClick={handleNextMonth}
               className="p-2 text-slate-grey hover:text-gunmetal hover:bg-white rounded-lg border border-transparent hover:border-alabaster-grey hover:shadow-sm transition-all duration-200"
             >
               <ChevronRight size={20} />
             </button>
           </div>
 
-          {/* 2. Months Grid */}
-          <div className="grid grid-cols-3 gap-3">
-            {months.map((m, i) => {
-              const value = `${year}-${String(i + 1).padStart(2, "0")}`;
-              const isActive = filterFormData.month === value;
-
-              return (
-                <button
-                  key={m}
-                  onClick={() => {
-                    handleFilterChange({
-                      target: {
-                        name: "month",
-                        value: value,
-                      },
-                    } as React.ChangeEvent<HTMLInputElement>);
-                    setMonthModal(false);
-                  }}
-                  className={`
-                    py-3.5 rounded-xl text-sm font-bold transition-all duration-200
-                    ${
-                      isActive
-                        ? "bg-gunmetal text-white shadow-md border border-transparent ring-2 ring-gunmetal/20 ring-offset-2"
-                        : "bg-white text-iron-grey border border-alabaster-grey hover:border-pale-slate hover:bg-bright-snow hover:text-gunmetal hover:shadow-sm"
-                    }
-                  `}
+          {/* Calendar Grid */}
+          <div className="px-1">
+            {/* Days of Week */}
+            <div className="grid grid-cols-7 mb-2">
+              {dayNames.map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-xs font-bold text-pale-slate-2 uppercase tracking-wider"
                 >
-                  {m}
-                </button>
-              );
-            })}
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 gap-y-1">
+              {/* Empty slots for first row */}
+              {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                <div key={`empty-${i}`} className="h-10 w-full" />
+              ))}
+
+              {/* Day Buttons */}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1;
+                const currentDateObj = new Date(year, month, day);
+                const time = currentDateObj.getTime();
+
+                const isStart = rangeStart?.getTime() === time;
+                const isEnd = rangeEnd?.getTime() === time;
+                const isInRange =
+                  rangeStart &&
+                  rangeEnd &&
+                  time > rangeStart.getTime() &&
+                  time < rangeEnd.getTime();
+
+                // Styling logic for range connections
+                let wrapperClass =
+                  "w-full h-10 flex items-center justify-center relative";
+                if (isInRange) wrapperClass += " bg-bright-snow";
+                if (isStart && rangeEnd)
+                  wrapperClass +=
+                    " bg-gradient-to-r from-transparent to-bright-snow";
+                if (isEnd && rangeStart)
+                  wrapperClass +=
+                    " bg-gradient-to-l from-transparent to-bright-snow";
+
+                let buttonClass =
+                  "w-9 h-9 rounded-full text-sm font-semibold transition-all flex items-center justify-center z-10 ";
+
+                if (isStart || isEnd) {
+                  buttonClass += "bg-gunmetal text-white shadow-md";
+                } else if (isInRange) {
+                  buttonClass += "text-gunmetal hover:bg-platinum";
+                } else {
+                  buttonClass +=
+                    "text-iron-grey hover:bg-platinum hover:text-gunmetal";
+                }
+
+                return (
+                  <div key={day} className={wrapperClass}>
+                    <button
+                      onClick={() => handleDayClick(day)}
+                      className={buttonClass}
+                    >
+                      {day}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Selected Range Display */}
+          <div className="flex items-center justify-between px-4 py-3 bg-bright-snow rounded-xl border border-platinum">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase font-bold text-slate-grey">
+                Start Date
+              </span>
+              <span className="text-sm font-bold text-gunmetal">
+                {rangeStart
+                  ? rangeStart.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "-- / -- / ----"}
+              </span>
+            </div>
+            <div className="h-6 w-px bg-pale-slate"></div>
+            <div className="flex flex-col text-right">
+              <span className="text-[10px] uppercase font-bold text-slate-grey">
+                End Date
+              </span>
+              <span className="text-sm font-bold text-gunmetal">
+                {rangeEnd
+                  ? rangeEnd.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "-- / -- / ----"}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="mt-2 pt-5 border-t border-platinum flex justify-end gap-3">
+            <button
+              onClick={handleClear}
+              className="px-5 py-2.5 rounded-lg text-sm font-bold text-gunmetal border border-alabaster-grey hover:bg-bright-snow hover:border-pale-slate transition-all"
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleApply}
+              disabled={!rangeStart}
+              className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-gunmetal hover:bg-shadow-grey hover:shadow-md active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Apply Filter
+            </button>
           </div>
         </div>
       </CustomModal>

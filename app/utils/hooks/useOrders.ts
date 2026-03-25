@@ -7,7 +7,8 @@ export function useOrders({
   route_no,
   license_no,
   username,
-  month,
+  start_date,
+  end_date,
   page = 1,
   limit = 20,
 }: {
@@ -16,7 +17,8 @@ export function useOrders({
   route_no?: string;
   license_no?: string;
   username?: string;
-  month?: string;
+  start_date?: string;
+  end_date?: string;
   page?: number;
   limit?: number;
 } = {}) {
@@ -28,7 +30,8 @@ export function useOrders({
       route_no,
       license_no,
       username,
-      month,
+      start_date,
+      end_date,
       page,
       limit,
     ],
@@ -70,19 +73,15 @@ export function useOrders({
         query = query.ilike("Customers.profiles.username", `%${username}%`);
       }
 
-      // ✅ Month filter
-      if (month) {
-        const start = `${month}-01`;
-        const endDate = new Date(start);
-        endDate.setMonth(endDate.getMonth() + 1);
+      // ✅ DATE RANGE FILTER
+      if (start_date) {
+        const start = new Date(`${start_date}T00:00:00.000Z`);
+        query = query.gte("created_at", start.toISOString());
+      }
 
-        const end = endDate.toISOString();
-
-        // if (status === "completed") {
-        //   query = query.gte("completed_at", start).lt("completed_at", end);
-        // } else {
-        query = query.gte("created_at", start).lt("created_at", end);
-        // }
+      if (end_date) {
+        const end = new Date(`${end_date}T23:59:59.999Z`);
+        query = query.lte("created_at", end.toISOString());
       }
 
       // ✅ pagination
@@ -170,6 +169,7 @@ export function useAddOrder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["shortage"] });
+      queryClient.invalidateQueries({ queryKey: ["requirement"] });
     },
   });
 }
@@ -193,6 +193,7 @@ export function useCancelOrder() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["shortage"] });
+      queryClient.invalidateQueries({ queryKey: ["requirement"] });
     },
   });
 }
@@ -232,6 +233,9 @@ export function useCompeleteOrder() {
       });
       queryClient.invalidateQueries({
         queryKey: ["shortage"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["requirement"],
       });
     },
   });

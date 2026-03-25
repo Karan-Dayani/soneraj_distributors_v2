@@ -82,6 +82,17 @@ export function useShortage() {
   });
 }
 
+export function useRequirement() {
+  return useQuery({
+    queryKey: ["requirement"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_total_demand");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function usePurchaseStock() {
   const queryClient = useQueryClient();
 
@@ -102,6 +113,7 @@ export function usePurchaseStock() {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
       queryClient.invalidateQueries({ queryKey: ["shortage"] });
+      queryClient.invalidateQueries({ queryKey: ["requirement"] });
     },
   });
 }
@@ -130,6 +142,7 @@ export function useRemoveStock() {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
       queryClient.invalidateQueries({ queryKey: ["shortage"] });
+      queryClient.invalidateQueries({ queryKey: ["requirement"] });
     },
   });
 }
@@ -147,6 +160,7 @@ export function useClearStock() {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
       queryClient.invalidateQueries({ queryKey: ["shortage"] });
+      queryClient.invalidateQueries({ queryKey: ["requirement"] });
     },
   });
 }
@@ -185,6 +199,7 @@ export function useUpdateStock() {
       queryClient.invalidateQueries({ queryKey: ["stock"] });
       queryClient.invalidateQueries({ queryKey: ["stock-batches"] });
       queryClient.invalidateQueries({ queryKey: ["shortage"] });
+      queryClient.invalidateQueries({ queryKey: ["requirement"] });
     },
   });
 }

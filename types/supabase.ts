@@ -386,6 +386,15 @@ export type Database = {
           total_available: number;
         }[];
       };
+      get_total_demand: {
+        Args: never;
+        Returns: {
+          product_name: string;
+          short_name: string;
+          size_ml: string;
+          total_required: number;
+        }[];
+      };
       process_order_batches: {
         Args: { p_items: Json; p_sales_order_id: number };
         Returns: undefined;

@@ -55,7 +55,7 @@ export default function Shortage() {
             </div>
           </div>
         </div>
-        <div className="px-6 md:px-8 pb-8">
+        <div className="px-6 md:px-8">
           {shortageData?.map((item, i) => (
             <div
               key={i}
@@ -87,6 +87,32 @@ export default function Shortage() {
               </div>
             </div>
           ))}
+        </div>
+        <div className="px-6 md:px-8 pb-8">
+          <div className="py-4 bg-gunmetal text-bright-snow font-extrabold border-b border-l border-r border-alabaster-grey flex justify-between divide-x divide-alabaster-grey">
+            {/* Matches Header Col 1 */}
+            <div className="basis-6/12 md:basis-2/5 flex items-center justify-start px-2">
+              Total
+            </div>
+
+            {/* Matches Header Col 3 */}
+            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
+              {shortageData.reduce((acc, item) => acc + item.qty_required, 0)}
+            </div>
+
+            {/* Matches Header Col 4 */}
+            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
+              {shortageData.reduce(
+                (acc, item) => acc + item.total_available,
+                0,
+              )}
+            </div>
+
+            {/* Matches Header Col 5 */}
+            <div className="basis-2/12 md:basis-1/5 flex items-center justify-center font-extrabold">
+              {shortageData.reduce((acc, item) => acc + item.shortage, 0)}
+            </div>
+          </div>
         </div>
       </div>
     </>

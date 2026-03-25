@@ -8,6 +8,7 @@ import {
   DiamondPlus,
   Home,
   Layers,
+  ListCheck,
   LogOut as LogOutIcon,
   Menu,
   Package,
@@ -39,6 +40,11 @@ export default function Header() {
     { name: "Stock", icon: <Layers size={20} />, route: "/stock" },
     { name: "Retailers", icon: <Users size={20} />, route: "/retailers" },
     { name: "Shortage", icon: <DiamondMinus size={20} />, route: "/shortage" },
+    {
+      name: "Requierment",
+      icon: <ListCheck size={20} />,
+      route: "/requirement",
+    },
   ];
   const { logout } = useLogout();
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
