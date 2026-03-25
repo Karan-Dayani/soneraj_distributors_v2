@@ -1,48 +1,120 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../supabase/client";
 
-type useOrderOption = {
+export function useOrders({
+  status,
+  address,
+  route_no,
+  license_no,
+  username,
+  month,
+  page = 1,
+  limit = 20,
+}: {
   status?: "pending" | "completed";
-};
-
-export function useOrders({ status }: useOrderOption = {}) {
+  address?: string;
+  route_no?: string;
+  license_no?: string;
+  username?: string;
+  month?: string;
+  page?: number;
+  limit?: number;
+} = {}) {
   return useQuery({
-    queryKey: ["orders", status],
+    queryKey: [
+      "orders",
+      status,
+      address,
+      route_no,
+      license_no,
+      username,
+      month,
+      page,
+      limit,
+    ],
     queryFn: async () => {
       let query = supabase.from("Sales_Orders").select(
         `
-          id,
-          status,
-          Customers!inner (
-            *,
-            profiles!inner (*)
-          )
-          `,
+        id,
+        status,
+        Customers!inner (
+          *,
+          profiles!inner (*)
+        )
+      `,
+        { count: "exact" },
       );
+
+      // ✅ Status filter
       if (status) {
         query = query.eq("status", status);
+      }
+
+      // ✅ Address filter
+      if (address) {
+        query = query.ilike("Customers.address", `%${address}%`);
+      }
+
+      // ✅ Route No filter
+      if (route_no) {
+        query = query.ilike("Customers.route_no", `%${route_no}%`);
+      }
+
+      // ✅ License No filter
+      if (license_no) {
+        query = query.ilike("Customers.license_no", `%${license_no}%`);
+      }
+
+      // ✅ Username filter (nested)
+      if (username) {
+        query = query.ilike("Customers.profiles.username", `%${username}%`);
+      }
+
+      // ✅ Month filter
+      if (month) {
+        const start = `${month}-01`;
+        const endDate = new Date(start);
+        endDate.setMonth(endDate.getMonth() + 1);
+
+        const end = endDate.toISOString();
 
         // if (status === "completed") {
-        //   const today = new Date();
-        //   today.setHours(0, 0, 0, 0);
-
-        //   const tomorrow = new Date(today);
-        //   tomorrow.setDate(tomorrow.getDate() + 1);
-
-        //   query = query
-        //     .gte("completed_at", today.toISOString())
-        //     .lt("completed_at", tomorrow.toISOString());
+        //   query = query.gte("completed_at", start).lt("completed_at", end);
+        // } else {
+        query = query.gte("created_at", start).lt("created_at", end);
         // }
       }
 
-      const { data, error } = await query;
+      // ✅ pagination
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      query = query.range(from, to);
+
+      query = query.order("created_at", { ascending: false });
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
-      return data;
+      return {
+        data: data || [],
+        count: count ?? 0,
+      };
     },
   });
 }
 
+// if (status === "completed") {
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0);
+
+//   const tomorrow = new Date(today);
+//   tomorrow.setDate(tomorrow.getDate() + 1);
+
+//   query = query
+//     .gte("completed_at", today.toISOString())
+//     .lt("completed_at", tomorrow.toISOString());
+// }
 export function useOrderItems({ id }: { id: number }) {
   return useQuery({
     queryKey: ["items", id],

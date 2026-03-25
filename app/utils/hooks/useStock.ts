@@ -63,7 +63,7 @@ export function useStockBatches({ stockId }: { stockId?: number }) {
       if (stockId) {
         query = query.eq("product_stock_id", stockId);
       }
-      const { data, error } = await query;
+      const { data, error } = await query.neq("quantity", 0);
 
       if (error) throw error;
       return data;

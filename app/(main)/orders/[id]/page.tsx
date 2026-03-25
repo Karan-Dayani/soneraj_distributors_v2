@@ -31,7 +31,7 @@ export default function OrderDetails() {
   const { id } = params;
   const { data, error, isLoading } = useOrderItems({ id: Number(id) });
   const { data: orderData } = useOrders();
-  const currOrder = orderData?.find((order) => order.id === Number(id));
+  const currOrder = orderData?.data?.find((order) => order.id === Number(id));
   const isOrderCompletable = data?.every(
     (item) =>
       (item.Product_Stock?.quantity ?? 0) >= (item["quantity-ordered"] ?? 0),
