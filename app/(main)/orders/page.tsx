@@ -134,6 +134,7 @@ export default function Orders() {
               <div
                 onClick={() => {
                   setSelectedStatus("pending");
+                  setPage(1);
                   setSelectedOrders([]);
                 }}
                 className={`w-32 text-center p-2 rounded-l-lg cursor-pointer ${
@@ -146,6 +147,7 @@ export default function Orders() {
               <div
                 onClick={() => {
                   setSelectedStatus("completed");
+                  setPage(1);
                   setSelectedOrders([]);
                 }}
                 className={`w-32 text-center p-2 rounded-r-lg cursor-pointer ${
