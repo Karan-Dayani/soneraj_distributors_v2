@@ -377,13 +377,11 @@ export type Database = {
       get_stock_shortage: {
         Args: never;
         Returns: {
-          order_id: number;
-          order_item_id: number;
           product_name: string;
-          qty_required: number;
           shortage: number;
           size_ml: string;
           total_available: number;
+          total_required: number;
         }[];
       };
       get_total_demand: {
