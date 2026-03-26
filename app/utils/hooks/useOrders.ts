@@ -90,7 +90,11 @@ export function useOrders({
 
       query = query.range(from, to);
 
-      query = query.order("created_at", { ascending: false });
+      if (status === "pending") {
+        query = query.order("created_at", { ascending: false });
+      } else if (status === "completed") {
+        query = query.order("completed_at", { ascending: false });
+      }
 
       const { data, error, count } = await query;
 
