@@ -116,16 +116,37 @@ export function useOrders({
 // }
 export function useOrderItems({ id }: { id: number }) {
   return useQuery({
-    queryKey: ["items", id],
+    queryKey: ["order-details", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("Sales_Order_Items")
         .select(
-          `*,Product_Stock (*, Products(*), Bottle_Sizes(*)), Order_Item_Batches(*, Stock_Batches(*))`,
+          `
+          *,
+          Sales_Orders (
+            id,
+            status,
+            created_at,
+            Customers (
+              *,
+              profiles (*)
+            )
+          ),
+          Product_Stock (
+            *,
+            Products (*),
+            Bottle_Sizes (*)
+          ),
+          Order_Item_Batches (
+            *,
+            Stock_Batches (*)
+          )
+        `,
         )
         .eq("sales_order_id", id);
 
       if (error) throw error;
+
       return data;
     },
   });

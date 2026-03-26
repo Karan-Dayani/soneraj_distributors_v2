@@ -137,6 +137,8 @@ export default function Orders() {
     limit,
   });
 
+  console.log("Orders Data:", data);
+
   const orders = data?.data || [];
   const totalCount = data?.count || 0;
   const totalPages = Math.ceil(totalCount / limit) || 1;

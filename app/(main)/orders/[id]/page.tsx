@@ -30,8 +30,8 @@ export default function OrderDetails() {
   const { addToast } = useToast();
   const { id } = params;
   const { data, error, isLoading } = useOrderItems({ id: Number(id) });
-  const { data: orderData } = useOrders();
-  const currOrder = orderData?.data?.find((order) => order.id === Number(id));
+
+  const currOrder = data?.length ? data[0].Sales_Orders : null;
   const isOrderCompletable = data?.every(
     (item) =>
       (item.Product_Stock?.quantity ?? 0) >= (item["quantity-ordered"] ?? 0),
@@ -90,13 +90,15 @@ export default function OrderDetails() {
     return <Error error={error.message} />;
   }
 
+  console.log("Current Order:", currOrder);
+
   return (
     <>
       <div className="max-w-5xl mx-auto p-6 md:p-8">
         <div className="flex flex-col gap-8">
           <div className="">
             <h1 className="text-3xl font-bold text-gunmetal">
-              {currOrder?.Customers.name}
+              {currOrder?.Customers?.name}
             </h1>
             <p className="text-slate-grey text-sm mt-1">
               Order Status :{" "}
@@ -228,7 +230,7 @@ export default function OrderDetails() {
           setCancelOrderAlert(false);
         }}
         title="Cancel Order"
-        message={`Do you want to cancel order from ${currOrder?.Customers.name} ?`}
+        message={`Do you want to cancel order from ${currOrder?.Customers?.name} ?`}
         type="warning"
       />
       <CustomAlert
@@ -253,7 +255,7 @@ export default function OrderDetails() {
           setCancelOrderAlert(false);
         }}
         title="Remove Order"
-        message={`Do you want to cancel order from ${currOrder?.Customers.name} from history ?`}
+        message={`Do you want to cancel order from ${currOrder?.Customers?.name} from history ?`}
         type="warning"
       />
     </>
