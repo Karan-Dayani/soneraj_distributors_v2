@@ -43,6 +43,22 @@ export const createStockPDF = (stockData: RawStockItem[]) => {
       );
     })
     .join("");
+  const totalQuantity = stockData.reduce((sum, item) => {
+    return (
+      sum +
+      item.Stock_Batches.reduce(
+        (batchSum, batch) => batchSum + batch.quantity,
+        0,
+      )
+    );
+  }, 0);
+
+  const totalRow = `
+      <tr>
+        <td colspan="2" style="text-align: right; font-weight: bold;">Total</td>
+        <td style="font-weight: bold;">${totalQuantity}</td>
+      </tr>
+    `;
 
   const html = `
     <!DOCTYPE html>
@@ -116,6 +132,7 @@ export const createStockPDF = (stockData: RawStockItem[]) => {
         </thead>
         <tbody>
           ${rows}
+          ${totalRow}
         </tbody>
       </table>
     </body>

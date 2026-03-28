@@ -265,7 +265,7 @@ export default function Stock() {
           </div>
         </div>
 
-        <div className="px-6 md:px-8 pb-8">
+        <div className="px-6 md:px-8">
           {sortedStockItems?.map((item) => (
             <div key={item.id}>
               {item.Stock_Batches?.map((batch) => (
@@ -311,6 +311,20 @@ export default function Stock() {
               ))}
             </div>
           ))}
+        </div>
+        <div className="px-6 md:px-8 pb-8">
+          <div>
+            <div className="py-4 bg-gunmetal text-bright-snow font-extrabold border-b border-l border-r border-alabaster-grey flex justify-between divide-x divide-alabaster-grey">
+              <div className="basis-8/12 md:basis-3/5 flex items-center justify-start px-2">
+                Total
+              </div>
+
+              <div className="basis-2/12 md:basis-1/5 flex items-center justify-center">
+                {stockItems.reduce((total, item) => total + item.quantity, 0)}
+              </div>
+              <div className="basis-2/12 md:basis-1/5 flex items-center justify-center"></div>
+            </div>
+          </div>
         </div>
       </div>
 
