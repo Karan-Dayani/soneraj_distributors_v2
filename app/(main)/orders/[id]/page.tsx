@@ -16,6 +16,7 @@ import { useCallback, useState } from "react";
 import { useToast } from "@/app/context/ToastContext";
 import CompletedOrderCard from "./CompletedOrderCard";
 import { useUser } from "@/app/context/UserContext";
+import { useCart } from "@/app/context/CartContext";
 
 type CompeleteBatchType = {
   sales_order_item_id: number;
@@ -28,6 +29,7 @@ export default function OrderDetails() {
   const params = useParams();
   const router = useRouter();
   const { addToast } = useToast();
+  const { replaceEntireCart } = useCart();
   const { id } = params;
   const { data, error, isLoading } = useOrderItems({ id: Number(id) });
 
@@ -218,7 +220,34 @@ export default function OrderDetails() {
             },
             {
               onSuccess: () => {
-                addToast("Order Canceled Successful!", "success");
+                const newCartState: Record<number, any> = {};
+                
+                data?.forEach((item: any) => {
+                  const stock = item.Product_Stock;
+                  if (!stock) return;
+                  const productId = stock.Products?.id;
+                  if (!productId) return;
+                  
+                  if (!newCartState[productId]) {
+                    newCartState[productId] = { 
+                      productId: productId,
+                      productName: stock.Products?.name || "Unknown Product", 
+                      variants: {} 
+                    };
+                  }
+                  
+                  newCartState[productId].variants[stock.id] = {
+                    stockId: stock.id,
+                    sizeName: stock.Bottle_Sizes?.size_ml as string,
+                    quantity: item["quantity-ordered"] || 0,
+                    maxStock: stock.quantity || 0,
+                    price: 0,
+                  };
+                });
+                
+                replaceEntireCart(newCartState);
+
+                addToast("Order Canceled Successful! Items added back to cart.", "success");
                 router.replace("/orders");
               },
               onError: (error) => {

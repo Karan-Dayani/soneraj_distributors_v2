@@ -40,6 +40,7 @@ type CartContextType = {
   removeProduct: (productId: number) => void;
   removeVariant: (productId: number, stockId: number) => void;
   clearCart: () => void;
+  replaceEntireCart: (newCart: CartState) => void;
   totalItems: number;
   getUniqueSizes: () => string[];
 };
@@ -151,6 +152,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const clearCart = () => saveCart({});
+  
+  const replaceEntireCart = (newCart: CartState) => saveCart(newCart);
 
   // 4. CALCULATE TOTAL (Double Loop needed now)
   const totalItems = Object.values(cart).reduce((sum, product) => {
@@ -190,6 +193,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeProduct,
         removeVariant,
         clearCart,
+        replaceEntireCart,
         totalItems,
         getUniqueSizes,
       }}
