@@ -1,7 +1,9 @@
 "use client";
 import Error from "@/app/components/Error";
 import Loader from "@/app/components/Loader";
+import { createShortagePDF } from "@/app/components/PDFs/ShortagePDF";
 import { useShortage } from "@/app/utils/hooks/useStock";
+import { ArrowDownToLine } from "lucide-react";
 
 export default function Shortage() {
   const { data: shortageData, isLoading, error } = useShortage();
@@ -20,12 +22,22 @@ export default function Shortage() {
     <>
       <div className="max-w-6xl mx-auto">
         <div className="sticky top-0 bg-bright-snow z-10 pt-6 md:pt-8 px-6 md:px-8">
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-8">
+          <div className="w-full flex items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gunmetal">Shortage</h1>
               <p className="text-slate-grey text-sm mt-1">
                 Buy these distillery units.
               </p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  createShortagePDF(shortageData);
+                }}
+                className="p-3 bg-white hover:bg-bright-snow rounded-xl border border-alabaster-grey cursor-pointer disabled:opacity-50 disabled:pointer-events-none transition-colors"
+              >
+                <ArrowDownToLine className="" />
+              </button>
             </div>
           </div>
 
