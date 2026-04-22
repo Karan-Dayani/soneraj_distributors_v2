@@ -13,6 +13,7 @@ import {
   Menu,
   Package,
   ShoppingCart,
+  TrendingUp,
   Users,
 } from "lucide-react";
 import { useState } from "react";
@@ -45,6 +46,7 @@ export default function Header() {
       icon: <ListCheck size={20} />,
       route: "/requirement",
     },
+    { name: "Sales", icon: <TrendingUp size={20} />, route: "/sales" },
   ];
   const { logout } = useLogout();
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -101,7 +103,7 @@ export default function Header() {
           </div>
 
           {/* --- Navigation Items --- */}
-          <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          <nav className="flex-1 px-3 py-4 overflow-y-auto no-scrollbar">
             <ul className="space-y-1">
               {menuItems.map((item, index) => (
                 <li key={index}>

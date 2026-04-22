@@ -374,6 +374,26 @@ export type Database = {
         }[];
       };
       get_email_from_username: { Args: { p_username: string }; Returns: Json };
+      get_sales_filtered: {
+        Args: {
+          p_end_date?: string;
+          p_retailer_id?: number;
+          p_route_no?: string;
+          p_start_date?: string;
+          p_username?: string;
+        };
+        Returns: {
+          address: string;
+          created_at: string;
+          id: number;
+          license_no: string;
+          name: string;
+          route_no: string;
+          total_quantity: number;
+          user_id: string;
+          username: string;
+        }[];
+      };
       get_stock_shortage: {
         Args: never;
         Returns: {

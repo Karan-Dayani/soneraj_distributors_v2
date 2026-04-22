@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { supabase } from "../supabase/client";
 
 export function useOrders({
@@ -281,5 +286,33 @@ export function useRemoveCompletedOrder() {
         queryKey: ["orders"],
       });
     },
+  });
+}
+
+export function useSalesFiltered(filters: {
+  route_no?: string;
+  retailer_id?: number | null;
+  username?: string;
+  start_date?: string;
+  end_date?: string;
+}) {
+  return useQuery({
+    queryKey: ["sales-filtered", filters],
+
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_sales_filtered", {
+        p_route_no: filters.route_no || undefined,
+        p_retailer_id: filters.retailer_id ?? undefined,
+        p_username: filters.username || undefined,
+        p_start_date: filters.start_date || undefined,
+        p_end_date: filters.end_date || undefined,
+      });
+
+      if (error) throw error;
+
+      return data;
+    },
+
+    placeholderData: keepPreviousData,
   });
 }
