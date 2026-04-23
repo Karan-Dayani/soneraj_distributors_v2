@@ -9,6 +9,7 @@ import {
   RefreshCcw,
   TrendingUp,
   ArrowDownToLine,
+  Search,
 } from "lucide-react";
 import { useCustomers } from "@/app/utils/hooks/useCustomers";
 import { useDebounce } from "@/app/utils/hooks/useDebounce";
@@ -31,7 +32,9 @@ function SalesDataTable({
   };
 }) {
   const formattedRouteNo =
-    appliedFilters.route_no && appliedFilters.route_no.length === 1 && /^\d$/.test(appliedFilters.route_no)
+    appliedFilters.route_no &&
+    appliedFilters.route_no.length === 1 &&
+    /^\d$/.test(appliedFilters.route_no)
       ? `0${appliedFilters.route_no}`
       : appliedFilters.route_no;
 
@@ -45,6 +48,15 @@ function SalesDataTable({
     isLoading: isSalesLoading,
     error: salesError,
   } = useSalesFiltered(queryFilters);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredSalesData = salesData?.filter(
+    (row) =>
+      row.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      row.username?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <div className="bg-white border border-alabaster-grey rounded-xl shadow-sm overflow-hidden">
@@ -61,51 +73,92 @@ function SalesDataTable({
           <p className="text-slate-grey text-sm">{salesError.message}</p>
         </div>
       ) : salesData && salesData.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-bright-snow border-b border-alabaster-grey text-xs uppercase tracking-widest text-slate-grey font-bold">
-                <th className="px-6 py-4 whitespace-nowrap">Retailer Name</th>
-                <th className="px-6 py-4 whitespace-nowrap">Address</th>
-                <th className="px-6 py-4 whitespace-nowrap">Sales Rep</th>
-                <th className="px-6 py-4 text-center whitespace-nowrap">
-                  Total Qty
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-alabaster-grey">
-              {salesData.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-bright-snow transition-colors duration-200 group"
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-gunmetal group-hover:text-black transition-colors">
-                      {row.name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div
-                      className="text-sm text-slate-grey max-w-[280px] truncate"
-                      title={row.address}
-                    >
-                      {row.address}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-platinum text-gunmetal text-[11px] uppercase tracking-wider font-bold">
-                      {row.username || "N/A"}
-                    </div>
+        <div className="flex flex-col">
+          <div className="p-5 bg-bright-snow/30 border-b border-alabaster-grey">
+            <div className="relative w-full max-w-md group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Search size={18} className="text-pale-slate-2 group-focus-within:text-gunmetal transition-colors duration-200" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search retailers or addresses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-alabaster-grey rounded-xl text-sm font-medium text-gunmetal placeholder-pale-slate-2 shadow-sm hover:border-pale-slate focus:outline-none focus:border-gunmetal focus:ring-4 focus:ring-gunmetal/5 transition-all duration-200"
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-bright-snow border-b border-alabaster-grey text-xs uppercase tracking-widest text-slate-grey font-bold">
+                  <th className="px-6 py-4 whitespace-nowrap">Retailer Name</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Address</th>
+                  <th className="px-6 py-4 whitespace-nowrap">Sales Rep</th>
+                  <th className="px-6 py-4 text-center whitespace-nowrap">
+                    Total Qty
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-alabaster-grey">
+                {filteredSalesData && filteredSalesData.length > 0
+                  ? filteredSalesData.map((row) => (
+                      <tr
+                        key={row.id}
+                        className="hover:bg-bright-snow transition-colors duration-200 group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-gunmetal group-hover:text-black transition-colors">
+                            {row.name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div
+                            className="text-sm text-slate-grey max-w-[280px] truncate"
+                            title={row.address}
+                          >
+                            {row.address}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-platinum text-gunmetal text-[11px] uppercase tracking-wider font-bold">
+                            {row.username || "N/A"}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="inline-flex items-center justify-center min-w-[3rem] px-3 py-1.5 rounded-lg bg-gunmetal/5 text-gunmetal font-bold border border-gunmetal/10 shadow-sm">
+                            {row.total_quantity}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  : null}
+              </tbody>
+              <tfoot className="bg-bright-snow border-t-2 border-alabaster-grey font-bold text-gunmetal">
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-4 text-right uppercase tracking-widest text-xs text-slate-grey"
+                  >
+                    Grand Total
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="inline-flex items-center justify-center min-w-[3rem] px-3 py-1.5 rounded-lg bg-gunmetal/5 text-gunmetal font-bold border border-gunmetal/10 shadow-sm">
-                      {row.total_quantity}
+                    <div className="inline-flex items-center justify-center min-w-[3rem] px-3 py-1.5 rounded-lg bg-gunmetal/10 text-gunmetal font-black border border-gunmetal/20 shadow-sm">
+                      {filteredSalesData?.reduce(
+                        (sum, row) => sum + (Number(row.total_quantity) || 0),
+                        0,
+                      ) || 0}
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </tfoot>
+            </table>
+            {filteredSalesData?.length === 0 && (
+              <div className="p-8 text-center text-slate-grey text-sm">
+                No matching records found in this list.
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="p-16 text-center flex flex-col items-center justify-center">
@@ -153,7 +206,9 @@ export default function SalesPage() {
   );
 
   const formattedRouteNo =
-    appliedFilters.route_no && appliedFilters.route_no.length === 1 && /^\d$/.test(appliedFilters.route_no)
+    appliedFilters.route_no &&
+    appliedFilters.route_no.length === 1 &&
+    /^\d$/.test(appliedFilters.route_no)
       ? `0${appliedFilters.route_no}`
       : appliedFilters.route_no;
 
