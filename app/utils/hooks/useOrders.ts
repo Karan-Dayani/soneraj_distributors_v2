@@ -316,3 +316,36 @@ export function useSalesFiltered(filters: {
     placeholderData: keepPreviousData,
   });
 }
+
+type SalesByMonthFilters = {
+  route_no?: string;
+  retailer_id?: number | null;
+  username?: string;
+  months: string[];
+};
+
+export function useSalesByMonths(filters: SalesByMonthFilters) {
+  return useQuery({
+    queryKey: ["sales-by-months", filters],
+
+    queryFn: async () => {
+      // ❗ must have at least 1 month
+      if (!filters.months || filters.months.length === 0) {
+        return [];
+      }
+
+      const { data, error } = await supabase.rpc("get_sales_by_months", {
+        p_months: filters.months,
+        p_route_no: filters.route_no || undefined,
+        p_retailer_id: filters.retailer_id ?? undefined,
+        p_username: filters.username || undefined,
+      });
+
+      if (error) throw error;
+
+      return data;
+    },
+
+    enabled: filters.months.length > 0, // 🔥 prevents empty calls
+  });
+}

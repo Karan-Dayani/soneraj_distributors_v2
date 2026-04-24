@@ -1,36 +1,77 @@
-export type SalesItem = {
-  id?: number | string;
-  name: string;
-  address: string;
-  username: string;
-  total_quantity: number;
-};
-
-export const createSalesPDF = (salesData: SalesItem[]) => {
+export const createSalesPDF = (salesData: any[], sortedMonths: string[]) => {
   const date = new Date().toLocaleDateString("en-GB");
 
-  const rows = salesData
-    .map(
-      (item) => `
-      <tr>
-        <td>${item.name}</td>
-        <td>${item.address}</td>
-        <td>${item.username || "N/A"}</td>
-        <td style="text-align: center;">${item.total_quantity}</td>
-      </tr>
-    `,
-    )
+  const monthNamesShort = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const monthHeaders = sortedMonths
+    .map((m) => {
+      const [year, month] = m.split("-");
+      const formattedHeader = `${monthNamesShort[parseInt(month) - 1]}-${year.slice(2)}`;
+      return `<th style="text-align: center;">${formattedHeader}</th>`;
+    })
     .join("");
 
-  const totalQuantity = salesData.reduce(
-    (sum, item) => sum + (Number(item.total_quantity) || 0),
-    0,
-  );
+  const headerRow = `
+    <tr>
+      <th style="width: 50%;">Name / Details</th>
+      ${monthHeaders}
+    </tr>
+  `;
+
+  const rows = salesData
+    .map((item) => {
+      const nameCol = `
+          <div style="font-weight: bold; font-size: 13px;">${item.name || ""}</div>
+          <div style="font-size: 11px; color: #555; margin-top: 2px;">
+             Route: ${item.route_no || "N/A"} | Rep: ${item.username || "N/A"}
+          </div>
+          <div style="font-size: 11px; color: #777; margin-top: 2px;">${item.address || ""}</div>
+        `;
+
+      const monthCols = sortedMonths
+        .map(
+          (m) => `
+          <td style="text-align: center; vertical-align: middle;">${item[m] || 0}</td>
+        `,
+        )
+        .join("");
+
+      return `
+        <tr>
+          <td>${nameCol}</td>
+          ${monthCols}
+        </tr>
+      `;
+    })
+    .join("");
+
+  const totalCols = sortedMonths
+    .map((m) => {
+      const sum = salesData.reduce(
+        (acc, item) => acc + (Number(item[m]) || 0),
+        0,
+      );
+      return `<td style="font-weight: bold; text-align: center;">${sum}</td>`;
+    })
+    .join("");
 
   const totalRow = `
       <tr>
-        <td colspan="3" style="text-align: right; font-weight: bold;">Total Quantity</td>
-        <td style="font-weight: bold; text-align: center;">${totalQuantity}</td>
+        <td style="text-align: right; font-weight: bold;">Grand Total</td>
+        ${totalCols}
       </tr>
     `;
 
@@ -80,6 +121,7 @@ export const createSalesPDF = (salesData: SalesItem[]) => {
           padding: 6px 8px; 
           font-size: 13px;
           font-weight: 500;
+          vertical-align: top;
         }
 
         /* Excel alternating row effect */
@@ -98,12 +140,7 @@ export const createSalesPDF = (salesData: SalesItem[]) => {
       
       <table>
         <thead>
-          <tr>
-            <th style="width: 30%;">Retailer Name</th>
-            <th style="width: 40%;">Address</th>
-            <th style="width: 15%;">Sales Rep</th>
-            <th style="width: 15%; text-align: center;">Total Qty</th>
-          </tr>
+          ${headerRow}
         </thead>
         <tbody>
           ${rows}
